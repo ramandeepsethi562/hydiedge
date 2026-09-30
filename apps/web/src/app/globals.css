@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #090d16;
+  --bg-secondary: #111827;
+  --bg-card: #1e293b;
+  --border-subtle: rgba(148, 163, 184, 0.16);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-primary: #3b82f6;
+  --accent-cyan: #06b6d4;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
+  --accent-violet: #8b5cf6;
+}
+
+.light-theme {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: #f1f5f9;
+  --border-subtle: rgba(15, 23, 42, 0.12);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Enterprise Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.45);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.7);
+}
+
+/* Glassmorphic Enterprise Panels */
+.hydi-glass {
+  background: rgba(17, 24, 39, 0.82);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.hydi-card {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.78) 0%, rgba(15, 23, 42, 0.88) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 0.75rem;
+  transition: all 0.18s ease;
+}
+
+.hydi-card:hover {
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+/* Heatmap Cell Intensity */
+.heatmap-cell-0 { background-color: rgba(30, 41, 59, 0.5); }
+.heatmap-cell-1 { background-color: rgba(16, 185, 129, 0.22); }
+.heatmap-cell-2 { background-color: rgba(16, 185, 129, 0.45); }
+.heatmap-cell-3 { background-color: rgba(16, 185, 129, 0.70); }
+.heatmap-cell-4 { background-color: rgba(16, 185, 129, 0.95); }
+
+/* Privacy Blur Filter for SS-007 & MON-001 */
+.privacy-blur-active {
+  filter: blur(8px);
+  transition: filter 0.25s ease;
+}
+.privacy-blur-active:hover {
+  filter: blur(3px);
+}

@@ -1,0 +1,231 @@
+name: hydiems-production
+
+services:
+  mysql:
+    image: mysql:8.0.39
+    container_name: hydi-mysql
+    restart: always
+    command: --defaults-file=/etc/mysql/conf.d/my.cnf
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-HydiMySql_Root_Prod_Password_2026!}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-hydiems_core}
+      MYSQL_USER: ${MYSQL_USER:-hydiems_app}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-HydiMySql_Strong_Prod_Password_2026!}
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - ./infra/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - hydi_mysql_data:/var/lib/mysql
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 40G
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8-alpine
+    container_name: hydi-clickhouse
+    restart: always
+    environment:
+      CLICKHOUSE_DB: ${CLICKHOUSE_DATABASE:-hydiems_telemetry}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-hydiems_analytics}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-HydiClickHouse_Strong_Prod_Password_2026!}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ports:
+      - "127.0.0.1:8123:8123"
+      - "127.0.0.1:9009:9000"
+    volumes:
+      - ./infra/clickhouse/config.xml:/etc/clickhouse-server/config.d/hydiems.xml:ro
+      - hydi_clickhouse_data:/var/lib/clickhouse
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    deploy:
+      resources:
+        limits:
+          cpus: "3.0"
+          memory: 26G
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: hydi-redis
+    restart: always
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--requirepass", "${REDIS_PASSWORD:-HydiRedis_Strong_Prod_Password_2026!}"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - ./infra/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - hydi_redis_data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 16G
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-HydiRedis_Strong_Prod_Password_2026!}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    build:
+      context: ./infra/minio
+      dockerfile: Dockerfile
+    container_name: hydi-minio
+    restart: always
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-hydiems_minio_admin}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-HydiMinio_Strong_Prod_Secret_Key_2026!}
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    volumes:
+      - hydi_minio_data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 12G
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  coturn:
+    image: coturn/coturn:4.6-alpine
+    container_name: hydi-coturn
+    restart: always
+    command:
+      - -n
+      - --log-file=stdout
+      - --use-auth-secret
+      - --static-auth-secret=${TURN_SHARED_SECRET:-HydiTurn_WebRTC_Secret_2026!}
+      - --realm=hydiedge.com
+      - --no-tlsv1
+      - --no-tlsv1_1
+    ports:
+      - "3478:3478/udp"
+      - "3478:3478/tcp"
+
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: hydi-livekit
+    restart: always
+    command: --config /etc/livekit.yaml
+    volumes:
+      - ./infra/livekit/livekit.yaml:/etc/livekit.yaml:ro
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "7882:7882/udp"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 4G
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: hydi-api
+    restart: always
+    env_file:
+      - .env
+    environment:
+      MYSQL_HOST: mysql
+      CLICKHOUSE_URL: http://clickhouse:8123
+      REDIS_HOST: redis
+      S3_ENDPOINT: http://minio:9000
+    ports:
+      - "127.0.0.1:4000:4000"
+    depends_on:
+      - mysql
+      - clickhouse
+      - redis
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 14G
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    container_name: hydi-worker
+    restart: always
+    env_file:
+      - .env
+    environment:
+      MYSQL_HOST: mysql
+      CLICKHOUSE_URL: http://clickhouse:8123
+      REDIS_HOST: redis
+      S3_ENDPOINT: http://minio:9000
+    depends_on:
+      - mysql
+      - clickhouse
+      - redis
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 10G
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: hydi-web
+    restart: always
+    env_file:
+      - .env
+    environment:
+      INTERNAL_API_URL: http://api:4000
+      NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:-}
+      NEXT_PUBLIC_WS_URL: ${PUBLIC_WS_URL:-ws://135.181.5.108:4000}
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - api
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 6G
+
+  caddy:
+    image: caddy:2.8-alpine
+    container_name: hydi-caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - hydi_caddy_data:/data
+      - hydi_caddy_config:/config
+    depends_on:
+      - web
+      - api
+
+volumes:
+  hydi_mysql_data:
+  hydi_clickhouse_data:
+  hydi_redis_data:
+  hydi_minio_data:
+  hydi_caddy_data:
+  hydi_caddy_config:

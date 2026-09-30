@@ -1,0 +1,24 @@
+<clickhouse>
+    <!-- ====================================================================== -->
+    <!-- HYDIEMS CLICKHOUSE 24.8 PRODUCTION CONFIGURATION                       -->
+    <!-- Tuned for 128 GB RAM / 12-Core Ryzen 9 / 3.5 TB NVMe SSD               -->
+    <!-- Allocated RAM Cap: 24 GB (25,769,803,776 bytes)                        -->
+    <!-- ====================================================================== -->
+    <max_server_memory_usage>25769803776</max_server_memory_usage>
+    <max_concurrent_queries>250</max_concurrent_queries>
+    <max_connections>2048</max_connections>
+    <mark_cache_size>4294967296</mark_cache_size>
+    <uncompressed_cache_size>4294967296</uncompressed_cache_size>
+    <background_pool_size>16</background_pool_size>
+    <background_schedule_pool_size>16</background_schedule_pool_size>
+    <timezone>UTC</timezone>
+
+    <compression>
+        <case>
+            <min_part_size>10000000</min_part_size>
+            <min_part_size_ratio>0.01</min_part_size_ratio>
+            <method>zstd</method>
+            <level>3</level>
+        </case>
+    </compression>
+</clickhouse>

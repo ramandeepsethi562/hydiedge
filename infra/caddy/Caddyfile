@@ -1,0 +1,88 @@
+{
+	email admin@hydiedge.com
+	on_demand_tls {
+		ask http://api:4000/api/v1/internal/tls-domain-verify
+	}
+}
+
+# 1. Primary Domain & App Subdomains (Automatic Let's Encrypt SSL + HTTP->HTTPS Redirect)
+hydiedge.com, www.hydiedge.com, app.hydiedge.com {
+	encode zstd gzip
+
+	@api_or_ws {
+		path /api/* /ws/*
+	}
+	handle @api_or_ws {
+		reverse_proxy api:4000 {
+			flush_interval -1
+		}
+	}
+
+	@livekit {
+		path /rtc /rtc/*
+	}
+	handle @livekit {
+		reverse_proxy livekit:7880 {
+			flush_interval -1
+		}
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}
+
+# 2. Dedicated API & WebSocket Subdomain (Automatic Let's Encrypt SSL)
+api.hydiedge.com {
+	encode zstd gzip
+
+	@livekit {
+		path /rtc /rtc/*
+	}
+	handle @livekit {
+		reverse_proxy livekit:7880 {
+			flush_interval -1
+		}
+	}
+
+	handle {
+		reverse_proxy api:4000 {
+			flush_interval -1
+		}
+	}
+}
+
+# 3. Direct S3 Pre-Signed Upload Subdomain (Automatic Let's Encrypt SSL -> NVMe Object Storage)
+storage.hydiedge.com {
+	request_body {
+		max_size 500MB
+	}
+	reverse_proxy minio:9000
+}
+
+# 4. Direct Server IP Fallback on Port 80
+http://135.181.5.108 {
+	encode zstd gzip
+
+	@api_or_ws {
+		path /api/* /ws/*
+	}
+	handle @api_or_ws {
+		reverse_proxy api:4000 {
+			flush_interval -1
+		}
+	}
+
+	@livekit {
+		path /rtc /rtc/*
+	}
+	handle @livekit {
+		reverse_proxy livekit:7880 {
+			flush_interval -1
+		}
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}

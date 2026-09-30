@@ -1,0 +1,33 @@
+{
+  "name": "hydiems-enterprise-monorepo",
+  "version": "2.5.0",
+  "private": true,
+  "description": "HydiEms — Enterprise Workforce Intelligence, Time & Attendance, Employee Monitoring, 11-Layer DLP, Project/Task Management, HR, Payroll & HydiAI Platform",
+  "workspaces": [
+    "packages/*",
+    "apps/api",
+    "apps/worker",
+    "apps/web"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "build:shared": "npm run build -w @hydiems/shared",
+    "build:db": "npm run build -w @hydiems/database",
+    "build:api": "npm run build -w @hydiems/api",
+    "build:worker": "npm run build -w @hydiems/worker",
+    "build:web": "npm run build -w @hydiems/web",
+    "build:agent": "dotnet build apps/desktop-agent/HydiEms.Agent.sln -c Release",
+    "dev:api": "npm run dev -w @hydiems/api",
+    "dev:worker": "npm run dev -w @hydiems/worker",
+    "dev:web": "npm run dev -w @hydiems/web",
+    "db:migrate": "npm run migrate -w @hydiems/database",
+    "db:seed": "npm run seed -w @hydiems/database",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

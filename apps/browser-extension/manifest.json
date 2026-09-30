@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "HydiEms Workforce & DLP Companion (EXT-001)",
+  "version": "2.4.0",
+  "description": "Enterprise browser activity telemetry, Project/Task timer sync, and DLP upload/clipboard policy enforcement for HydiEms.",
+  "permissions": [
+    "tabs",
+    "storage",
+    "alarms",
+    "idle",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://*.hydiems.local/*",
+    "http://localhost:3000/*",
+    "http://127.0.0.1:19840/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "HydiEms Workforce Companion"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

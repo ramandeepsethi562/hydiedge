@@ -1,0 +1,10 @@
+node_modules
+**/node_modules
+**/dist
+**/.next
+**/bin
+**/obj
+.git
+docs
+*.tar.gz
+deploy-remote.js
