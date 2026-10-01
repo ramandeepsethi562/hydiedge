@@ -108,8 +108,8 @@ export default function HydiEmsEnterprisePage() {
   // Authentication & Session State
   const [currentUser, setCurrentUser] = useState<UserSession | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState<boolean>(true);
-  const [loginEmail, setLoginEmail] = useState<string>("ramandeep@hydiedge.com");
-  const [loginPassword, setLoginPassword] = useState<string>("password123");
+  const [loginEmail, setLoginEmail] = useState<string>("");
+  const [loginPassword, setLoginPassword] = useState<string>("");
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginLoading, setLoginLoading] = useState<boolean>(false);
 
@@ -205,8 +205,16 @@ export default function HydiEmsEnterprisePage() {
     setActiveScreenId(screenId);
   };
 
-  const handleLogin = async (emailToUse?: string, roleToUse?: SystemRole, nameToUse?: string) => {
-    const targetEmail = (emailToUse || loginEmail).trim().toLowerCase();
+  const handleLogin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const targetEmail = loginEmail.trim().toLowerCase();
+    const targetPassword = loginPassword;
+
+    if (!targetEmail || !targetPassword) {
+      setLoginError("Please enter both work email and password.");
+      return;
+    }
+
     setLoginLoading(true);
     setLoginError(null);
 
@@ -214,42 +222,27 @@ export default function HydiEmsEnterprisePage() {
       const res = await fetch("/api/v1/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: targetEmail, password: loginPassword || "password123" }),
+        body: JSON.stringify({ email: targetEmail, password: targetPassword }),
       });
 
-      let sessionData: UserSession;
-      if (res.ok) {
-        const data = await res.json();
-        const userRole = (roleToUse || data.user.role) as SystemRole;
-        sessionData = {
-          userId: data.user.userId,
-          name: nameToUse || (targetEmail.includes("ramandeep") ? "Ramandeep" : data.user.role === "SUPER_ADMIN" ? "Platform Super Admin" : "Team Lead"),
-          email: data.user.email,
-          role: userRole,
-          orgId: data.user.orgId,
-          employeeId: data.user.employeeId,
-        };
-      } else {
-        // Fallback session
-        const determinedRole: SystemRole =
-          roleToUse ||
-          (targetEmail.includes("superadmin") || targetEmail.includes("admin_k8f3n9")
-            ? "SUPER_ADMIN"
-            : targetEmail.includes("emp")
-            ? "EMPLOYEE"
-            : targetEmail.includes("lead")
-            ? "MANAGER"
-            : "ORG_ADMIN");
-
-        sessionData = {
-          userId: `usr-${Date.now()}`,
-          name: nameToUse || (targetEmail.includes("ramandeep") ? "Ramandeep" : "Administrator"),
-          email: targetEmail,
-          role: determinedRole,
-          orgId: "org-hydiedge-001",
-          employeeId: "emp-win-ramandeep",
-        };
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        setLoginError(
+          errData.message || "Invalid work email or password. Please verify your credentials."
+        );
+        return;
       }
+
+      const data = await res.json();
+      const userRole = data.user.role as SystemRole;
+      const sessionData: UserSession = {
+        userId: data.user.userId,
+        name: data.user.fullName || (targetEmail.includes("ramandeep") ? "Ramandeep" : data.user.role === "SUPER_ADMIN" ? "Platform Super Admin" : "Enterprise User"),
+        email: data.user.email,
+        role: userRole,
+        orgId: data.user.orgId,
+        employeeId: data.user.employeeId,
+      };
 
       localStorage.setItem("hydiedge_session", JSON.stringify(sessionData));
       setCurrentUser(sessionData);
@@ -263,27 +256,7 @@ export default function HydiEmsEnterprisePage() {
         setActiveScreenId("DASH-001");
       }
     } catch {
-      // Local fallback
-      const determinedRole: SystemRole =
-        roleToUse ||
-        (targetEmail.includes("superadmin") || targetEmail.includes("admin_k8f3n9")
-          ? "SUPER_ADMIN"
-          : targetEmail.includes("emp")
-          ? "EMPLOYEE"
-          : "ORG_ADMIN");
-
-      const sessionData: UserSession = {
-        userId: `usr-${Date.now()}`,
-        name: nameToUse || (targetEmail.includes("ramandeep") ? "Ramandeep" : "Administrator"),
-        email: targetEmail,
-        role: determinedRole,
-        orgId: "org-acme-global-001",
-        employeeId: "emp-win-ramandeep",
-      };
-
-      localStorage.setItem("hydiedge_session", JSON.stringify(sessionData));
-      setCurrentUser(sessionData);
-      setActiveRole(sessionData.role);
+      setLoginError("Unable to connect to authentication server. Please check your network connection.");
     } finally {
       setLoginLoading(false);
     }
@@ -442,88 +415,9 @@ export default function HydiEmsEnterprisePage() {
                 </button>
               </form>
 
-              {/* Quick-Access Role Profiles */}
-              <div className="space-y-2.5 pt-2 border-t border-slate-800">
-                <div className="text-[11px] font-mono uppercase text-slate-400 font-semibold">
-                  Or select authorized profile for instant sign-in:
-                </div>
-
-                <div className="grid grid-cols-1 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleLogin("ramandeep@hydiedge.com", "ORG_ADMIN", "Ramandeep (Org Admin)")}
-                    className="w-full text-left p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-850 border border-slate-700 hover:border-blue-500/50 transition flex items-center justify-between group"
-                  >
-                    <div>
-                      <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                        <UserCheck className="w-3.5 h-3.5 text-blue-400" />
-                        Ramandeep (Organization Admin & Workstation Owner)
-                      </div>
-                      <div className="text-[10px] text-slate-400">
-                        Full access: Live Screen & CCTV, Audio/Video, Workforce, Tasks, DLP Policies.
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40">
-                      ORG_ADMIN
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleLogin("admin_k8f3n9@hydiedge.com", "SUPER_ADMIN", "Platform Super Admin")}
-                    className="w-full text-left p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-850 border border-slate-700 hover:border-violet-500/50 transition flex items-center justify-between group"
-                  >
-                    <div>
-                      <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                        <ShieldCheck className="w-3.5 h-3.5 text-violet-400" />
-                        Platform Super Admin
-                      </div>
-                      <div className="text-[10px] text-slate-400">
-                        Multi-tenant control, storage routers, infrastructure health & all modules.
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-violet-500/20 text-violet-300 border border-violet-500/40">
-                      SUPER_ADMIN
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleLogin("lead_eng@hydiedge.com", "MANAGER", "Team Lead (Engineering Manager)")}
-                    className="w-full text-left p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-850 border border-slate-700 hover:border-cyan-500/50 transition flex items-center justify-between group"
-                  >
-                    <div>
-                      <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-cyan-400" />
-                        Team Lead (Engineering Manager)
-                      </div>
-                      <div className="text-[10px] text-slate-400">
-                        Team attendance, task boards, live employee monitoring for team members.
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-                      MANAGER
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleLogin("ramandeep_emp@hydiedge.com", "EMPLOYEE", "Ramandeep (Employee View)")}
-                    className="w-full text-left p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-850 border border-slate-700 hover:border-emerald-500/50 transition flex items-center justify-between group"
-                  >
-                    <div>
-                      <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                        <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
-                        Employee (Ramandeep - Self-Service View)
-                      </div>
-                      <div className="text-[10px] text-slate-400">
-                        Personal dashboard, task timer, attendance. (CCTV and admin tabs locked).
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                      EMPLOYEE
-                    </span>
-                  </button>
+              <div className="pt-2 border-t border-slate-800 text-center">
+                <div className="text-[11px] font-mono text-slate-400">
+                  Protected by Enterprise Zero-Trust Identity • All sessions audited
                 </div>
               </div>
             </div>

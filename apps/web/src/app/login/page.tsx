@@ -18,15 +18,55 @@ import {
 
 export default function LoginPage() {
   const [activeScreen, setActiveScreen] = useState<"AUTH-001" | "AUTH-002" | "AUTH-003" | "AUTH-004">("AUTH-001");
-  const [email, setEmail] = useState("admin@acme-enterprise.io");
-  const [password, setPassword] = useState("••••••••••••••");
-  const [totpCode, setTotpCode] = useState("482910");
-  const [ssoDomain, setSsoDomain] = useState("acme-enterprise.okta.com");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [totpCode, setTotpCode] = useState("");
+  const [ssoDomain, setSsoDomain] = useState("");
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleAction = (msg: string) => {
     setStatusMsg(msg);
     setTimeout(() => setStatusMsg(null), 4000);
+  };
+
+  const handleLiveSignIn = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !password) {
+      setErrorMsg("Please enter both work email and password.");
+      return;
+    }
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      const res = await fetch("/api/v1/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail, password, totpCode: totpCode || undefined }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setErrorMsg(err.message || "Invalid work email or password. Please verify your credentials.");
+        return;
+      }
+      const data = await res.json();
+      const sessionData = {
+        userId: data.user.userId,
+        name: data.user.fullName || (cleanEmail.includes("ramandeep") ? "Ramandeep" : data.user.role === "SUPER_ADMIN" ? "Platform Super Admin" : "Enterprise User"),
+        email: data.user.email,
+        role: data.user.role,
+        orgId: data.user.orgId,
+        employeeId: data.user.employeeId,
+      };
+      localStorage.setItem("hydiedge_session", JSON.stringify(sessionData));
+      window.location.href = "/";
+    } catch {
+      setErrorMsg("Unable to connect to authentication server. Please check your network connection.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -67,12 +107,6 @@ export default function LoginPage() {
             className="px-3 py-1.5 rounded-lg text-xs font-mono bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-600/30"
           >
             AUTH-005 Onboarding →
-          </Link>
-          <Link
-            href="/"
-            className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5"
-          >
-            Enter Platform Shell <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       </div>
@@ -138,6 +172,13 @@ export default function LoginPage() {
               </div>
             )}
 
+            {errorMsg && (
+              <div className="mb-4 p-3 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
             {activeScreen === "AUTH-001" && (
               <div className="space-y-4">
                 <div>
@@ -145,6 +186,7 @@ export default function LoginPage() {
                   <input
                     type="email"
                     value={email}
+                    placeholder="name@hydiedge.com"
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-lg bg-slate-900/90 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500"
                   />
@@ -163,6 +205,7 @@ export default function LoginPage() {
                   <input
                     type="password"
                     value={password}
+                    placeholder="••••••••••••••"
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-lg bg-slate-900/90 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500"
                   />
@@ -176,20 +219,16 @@ export default function LoginPage() {
                   <span className="font-mono text-[11px] text-emerald-400">TLS 1.3 Verified</span>
                 </div>
 
-                <div className="pt-2 flex gap-3">
+                <div className="pt-2">
                   <button
                     type="button"
-                    onClick={() => setActiveScreen("AUTH-002")}
-                    className="flex-1 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition"
+                    onClick={() => handleLiveSignIn()}
+                    disabled={loading}
+                    className="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-semibold text-sm transition flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    Sign In & Verify 2FA
+                    {loading ? "Authenticating credentials..." : "Sign In to Workspace"}
+                    {!loading && <ArrowRight className="w-4 h-4" />}
                   </button>
-                  <Link
-                    href="/"
-                    className="px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm flex items-center gap-1.5"
-                  >
-                    Instant Demo <ArrowRight className="w-4 h-4" />
-                  </Link>
                 </div>
 
                 <div className="relative my-4 flex items-center justify-center">
@@ -236,17 +275,20 @@ export default function LoginPage() {
                   <input
                     type="text"
                     value={totpCode}
+                    placeholder="482910"
                     onChange={(e) => setTotpCode(e.target.value)}
                     className="w-full px-4 py-3 rounded-lg bg-slate-900 border border-blue-500/50 text-center font-mono text-xl tracking-[0.4em] text-white"
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Link
-                    href="/"
-                    className="flex-1 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-center font-semibold text-sm"
+                  <button
+                    type="button"
+                    onClick={() => handleLiveSignIn()}
+                    disabled={loading}
+                    className="flex-1 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white text-center font-semibold text-sm cursor-pointer"
                   >
-                    Verify TOTP & Launch Workspace
-                  </Link>
+                    {loading ? "Verifying..." : "Verify Credentials & Launch Workspace"}
+                  </button>
                   <button
                     type="button"
                     onClick={() => handleAction("WebAuthn FIDO2 Hardware Key challenge verified.")}
