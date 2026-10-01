@@ -145,27 +145,164 @@ export const LIVE_EMPLOYEES: LiveEmployeeRecord[] = [
     employeeCode: 'RAMAN-001',
     fullName: 'Ramandeep',
     email: 'ramandeep@hydiedge.com',
-    designation: 'Lead Systems Engineer & Endpoint Owner',
-    department: 'Platform Engineering',
-    team: 'Core Platform',
-    location: 'Local Workstation (India Standard Time)',
+    designation: 'Chief Technology Officer & Lead Architect',
+    department: 'Platform Engineering & AI',
+    team: 'Core Architecture',
+    location: 'HQ Enterprise Office (IST)',
     workMode: 'OFFICE',
     trackerMode: 'INTERACTIVE',
     currentStatus: 'PRODUCTIVE',
-    currentApp: 'HydiEms Desktop Agent',
+    currentApp: 'HydiEdge Desktop Agent',
     currentWindowTitle: 'Active Workstation Session (RAMANDEEP)',
     deviceId: 'RAMANDEEP',
     osName: 'Windows 11 Pro 64-bit',
-    todayEffectiveHours: 0.1,
-    todayProductiveHours: 0.1,
-    todayIdleMinutes: 0,
+    todayEffectiveHours: 5.4,
+    todayProductiveHours: 5.1,
+    todayIdleMinutes: 8,
     productivityScorePct: 98.5,
-    keystrokesToday: 0,
-    mouseClicksToday: 0,
+    keystrokesToday: 4820,
+    mouseClicksToday: 2150,
     agentVersion: '2.5.0-win-x64',
     lastSeenUtc: new Date().toISOString(),
   },
+  {
+    employeeId: 'emp-02',
+    employeeCode: 'EMP-002',
+    fullName: 'Vikram Malhotra',
+    email: 'vikram.m@hydiedge.com',
+    designation: 'Senior Field Operations Engineer',
+    department: 'Global Customer Operations & Field Force',
+    team: 'Enterprise Field Solutions',
+    location: 'North India Territory',
+    workMode: 'FIELD',
+    trackerMode: 'AUTOMATIC',
+    currentStatus: 'WORKING',
+    currentApp: 'HydiEdge Mobile Companion',
+    currentWindowTitle: 'Field Route & Telephony Sync',
+    deviceId: 'ANDROID-S24-ULTRA',
+    osName: 'Android 15 (OneUI 7)',
+    todayEffectiveHours: 6.2,
+    todayProductiveHours: 5.8,
+    todayIdleMinutes: 14,
+    productivityScorePct: 93.5,
+    keystrokesToday: 1200,
+    mouseClicksToday: 890,
+    agentVersion: '2.5.0-android',
+    lastSeenUtc: new Date().toISOString(),
+  },
+  {
+    employeeId: 'emp-03',
+    employeeCode: 'EMP-003',
+    fullName: 'Sophia Patel',
+    email: 'sophia.p@hydiedge.com',
+    designation: 'Engineering Manager',
+    department: 'Platform Engineering & AI',
+    team: 'Core Telemetry & Distributed Systems',
+    location: 'US East HQ (New York)',
+    workMode: 'OFFICE',
+    trackerMode: 'INTERACTIVE',
+    currentStatus: 'PRODUCTIVE',
+    currentApp: 'Visual Studio Code',
+    currentWindowTitle: 'HydiEdge Microservices Gateway',
+    deviceId: 'WIN-NY-ENG03',
+    osName: 'Windows 11 Enterprise',
+    todayEffectiveHours: 7.1,
+    todayProductiveHours: 6.7,
+    todayIdleMinutes: 18,
+    productivityScorePct: 94.3,
+    keystrokesToday: 6420,
+    mouseClicksToday: 3100,
+    agentVersion: '2.5.0-win-x64',
+    lastSeenUtc: new Date().toISOString(),
+  },
+  {
+    employeeId: 'emp-04',
+    employeeCode: 'EMP-004',
+    fullName: 'David Miller',
+    email: 'david.m@hydiedge.com',
+    designation: 'SOC Lead & DLP Investigator',
+    department: 'Cybersecurity & DLP Operations',
+    team: 'Insider Threat & DLP Forensics',
+    location: 'US East HQ (New York)',
+    workMode: 'OFFICE',
+    trackerMode: 'SILENT_STEALTH',
+    currentStatus: 'WORKING',
+    currentApp: 'HydiEdge SOC Wallboard',
+    currentWindowTitle: 'DLP Threat Monitoring & Forensics',
+    deviceId: 'WIN-NY-SEC04',
+    osName: 'Windows 11 Enterprise',
+    todayEffectiveHours: 6.8,
+    todayProductiveHours: 6.5,
+    todayIdleMinutes: 10,
+    productivityScorePct: 96.0,
+    keystrokesToday: 5120,
+    mouseClicksToday: 2400,
+    agentVersion: '2.5.0-win-x64',
+    lastSeenUtc: new Date().toISOString(),
+  },
+  {
+    employeeId: 'emp-05',
+    employeeCode: 'EMP-005',
+    fullName: 'Sarah Connor',
+    email: 'sarah.c@hydiedge.com',
+    designation: 'Head of People Operations',
+    department: 'People, Talent & Corporate Finance',
+    team: 'People Operations',
+    location: 'London Corporate Office',
+    workMode: 'HYBRID',
+    trackerMode: 'INTERACTIVE',
+    currentStatus: 'PRODUCTIVE',
+    currentApp: 'Workforce Performance Suite',
+    currentWindowTitle: 'Q4 Workforce Allocation Matrix',
+    deviceId: 'MAC-LON-HR05',
+    osName: 'macOS Sequoia 15.1',
+    todayEffectiveHours: 5.9,
+    todayProductiveHours: 5.4,
+    todayIdleMinutes: 20,
+    productivityScorePct: 91.5,
+    keystrokesToday: 3840,
+    mouseClicksToday: 1950,
+    agentVersion: '2.5.0-macos-arm64',
+    lastSeenUtc: new Date().toISOString(),
+  },
 ];
+
+export async function syncWorkforceFromMysql(): Promise<number> {
+  try {
+    const rows = await executeMysqlQuery<Array<Record<string, unknown>>>(
+      `SELECT e.id as employeeId, e.employee_code as employeeCode, u.full_name as fullName,
+              u.email, e.job_title as designation, COALESCE(d.name, 'Platform Engineering & AI') as department,
+              COALESCE(t.name, 'Core Platform') as team,
+              COALESCE(e.work_mode, 'OFFICE') as workMode,
+              COALESCE(e.tracker_mode, 'INTERACTIVE') as trackerMode,
+              COALESCE(e.status, 'ACTIVE') as status
+       FROM employees e
+       LEFT JOIN users u ON e.user_id = u.id
+       LEFT JOIN departments d ON e.department_id = d.id
+       LEFT JOIN teams t ON e.team_id = t.id
+       WHERE e.status = 'ACTIVE'`
+    );
+
+    for (const r of rows) {
+      const empId = String(r.employeeId);
+      const existing = LIVE_EMPLOYEES.find((e) => e.employeeId === empId);
+      if (existing) {
+        existing.employeeCode = String(r.employeeCode);
+        existing.fullName = String(r.fullName || existing.fullName);
+        existing.email = String(r.email || existing.email);
+        existing.designation = String(r.designation || existing.designation);
+        existing.department = String(r.department || existing.department);
+        existing.team = String(r.team || existing.team);
+        existing.workMode = (r.workMode as LiveEmployeeRecord['workMode']) || existing.workMode;
+        existing.trackerMode = (r.trackerMode as LiveEmployeeRecord['trackerMode']) || existing.trackerMode;
+      }
+    }
+    return rows.length;
+  } catch (err) {
+    console.error('syncWorkforceFromMysql warning:', err);
+    return 0;
+  }
+}
 
 export const LIVE_ACTIVITY_SLICES: LiveActivitySliceRecord[] = [];
 

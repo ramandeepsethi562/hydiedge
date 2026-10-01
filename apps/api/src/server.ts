@@ -27,6 +27,7 @@ import { registerScreenRecordingRoutes } from './routes/screenRecordingRoutes';
 import { registerLiveMonitoringRoutes } from './routes/liveMonitoringRoutes';
 import { registerDeviceManagementRoutes } from './routes/deviceManagementRoutes';
 import { registerProjectManagementRoutes } from './routes/projectManagementRoutes';
+import { syncWorkforceFromMysql } from './state/liveTelemetryState';
 
 export async function buildHydiApiServer(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -122,6 +123,8 @@ if (require.main === module) {
         app.log.info({ mig }, 'Database migrations verified on startup');
         const seed = await seedProductionDefaults();
         app.log.info({ seed }, 'Production seed defaults verified on startup');
+        const workforceSynced = await syncWorkforceFromMysql();
+        app.log.info({ workforceSynced }, 'Live workforce synced from MySQL on startup');
       } catch (dbErr) {
         app.log.warn({ err: dbErr }, 'Non-fatal startup migration/seed warning');
       }

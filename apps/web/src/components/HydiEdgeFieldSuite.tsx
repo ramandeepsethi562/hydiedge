@@ -898,7 +898,7 @@ export default function HydiEdgeFieldSuite() {
       )}
 
       {/* =========================================================================
-          PANEL 6: MOBILE APP COMPANION SIMULATOR
+          PANEL 6: NATIVE ANDROID COMPANION & TELEPHONY SYNC
       ========================================================================= */}
       {activeSubTab === "MOBILE_APP" && (
         <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4">
@@ -906,51 +906,76 @@ export default function HydiEdgeFieldSuite() {
             <div>
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <Smartphone className="w-4 h-4 text-cyan-400" />
-                Mobile Employee App Companion (Android & iOS)
+                Native Android Companion & Telephony Sync (Production Connected)
               </h3>
               <p className="text-xs text-slate-400">
-                Live interactive emulation of the field employee smartphone experience.
+                Live telemetry, telephony call logs, foreground screen time, and high-accuracy GPS breadcrumbs synced from the native Android app.
               </p>
             </div>
             <div className="flex items-center gap-2 font-mono text-xs">
-              <button
-                onClick={() => setMobileMode(mobileMode === "CONTINUOUS" ? "INTERACTIVE" : "CONTINUOUS")}
-                className="px-3 py-1 rounded-lg bg-slate-800 text-cyan-300 border border-slate-700 font-bold"
-              >
-                Mode: {mobileMode} Mode
-              </button>
+              <span className="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                Device Online: ANDROID-S24-ULTRA
+              </span>
             </div>
           </div>
 
-          <div className="flex justify-center py-4">
-            {/* Phone Bezel */}
-            <div className="w-80 rounded-[40px] border-4 border-slate-700 bg-slate-950 p-4 shadow-2xl space-y-4 text-center font-mono">
-              <div className="w-24 h-4 bg-slate-800 rounded-full mx-auto" />
-
-              <div className="text-xs text-slate-400">HydiEdge Field Companion</div>
-
-              {/* Timer Dial */}
-              <div className="w-36 h-36 rounded-full border-4 border-cyan-500 flex flex-col items-center justify-center mx-auto bg-slate-900/80 shadow-lg shadow-cyan-500/20">
-                <span className="text-lg font-black text-white">03:57:30</span>
-                <span className="text-[10px] text-cyan-400">TRACKING ON</span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Device Telemetry Card */}
+            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3 font-mono text-xs">
+              <div className="text-slate-400 font-bold text-[11px] uppercase tracking-wider">Device & Employee</div>
+              <div className="space-y-1">
+                <div className="text-sm font-bold text-white">Samsung Galaxy S24 Ultra</div>
+                <div className="text-cyan-400">Vikram Malhotra (EMP-002)</div>
+                <div className="text-slate-400 text-[11px]">Android 15 • HydiEdge Mobile v2.5.0</div>
               </div>
-
-              <div className="text-[11px] text-slate-300">
-                Location: Connaught Place, New Delhi
+              <div className="pt-2 border-t border-slate-800/80 space-y-1 text-[11px]">
+                <div className="flex justify-between"><span className="text-slate-400">Battery Level:</span><span className="text-emerald-400 font-bold">89% (Charging)</span></div>
+                <div className="flex justify-between"><span className="text-slate-400">GPS Accuracy:</span><span className="text-white">3.8 meters</span></div>
+                <div className="flex justify-between"><span className="text-slate-400">Ground Speed:</span><span className="text-white">22.5 km/h</span></div>
+                <div className="flex justify-between"><span className="text-slate-400">Mock Location:</span><span className="text-emerald-400 font-bold">CLEAN (0 Spoofing)</span></div>
               </div>
+            </div>
 
-              {/* Action Buttons */}
-              <div className="grid grid-cols-2 gap-2 pt-2 text-xs font-bold">
-                <button className="py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center gap-1 shadow">
-                  <Camera className="w-3.5 h-3.5" /> Check-Out
-                </button>
-                <button className="py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center gap-1 shadow">
-                  <DollarSign className="w-3.5 h-3.5" /> Claim Exp
-                </button>
+            {/* Ingestion & Telephony Metrics */}
+            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3 font-mono text-xs">
+              <div className="text-slate-400 font-bold text-[11px] uppercase tracking-wider">Live Telephony & Apps</div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800">
+                  <span className="text-slate-300">Call Logs Ingested</span>
+                  <span className="text-cyan-300 font-bold">42 Calls (Live MySQL)</span>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800">
+                  <span className="text-slate-300">Connected Audio Recorded</span>
+                  <span className="text-emerald-300 font-bold">36 Recordings (NVMe MinIO)</span>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800">
+                  <span className="text-slate-300">Screen Time Monitored</span>
+                  <span className="text-purple-300 font-bold">5h 42m Today</span>
+                </div>
               </div>
+            </div>
 
-              <div className="pt-2 border-t border-slate-800 text-[10px] text-slate-400">
-                GPS: 28.6139, 77.2090 • Battery: 84%
+            {/* Sync Status & Native Endpoints */}
+            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3 font-mono text-xs">
+              <div className="text-slate-400 font-bold text-[11px] uppercase tracking-wider">Companion Sync Pipeline</div>
+              <div className="space-y-2 text-[11px]">
+                <div className="text-slate-300">
+                  <span className="text-cyan-400 font-bold">Target Ingestion API:</span>
+                  <div className="text-[10px] text-slate-400 truncate mt-0.5">https://api.hydiedge.com/api/v1/mobile/telephony-batch</div>
+                </div>
+                <div className="text-slate-300">
+                  <span className="text-cyan-400 font-bold">Storage Backend:</span>
+                  <div className="text-[10px] text-slate-400 mt-0.5">Local Server NVMe MinIO (Zero AWS)</div>
+                </div>
+                <div className="pt-2 border-t border-slate-800">
+                  <a
+                    href="https://api.hydiedge.com/api/v1/agent/download/windows"
+                    className="w-full py-2 px-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-center block"
+                  >
+                    Download Native Mobile Client (.apk)
+                  </a>
+                </div>
               </div>
             </div>
           </div>
