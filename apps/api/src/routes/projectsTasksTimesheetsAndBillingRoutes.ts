@@ -421,12 +421,37 @@ export async function registerProjectsTasksTimesheetsAndBillingRoutes(
     const orgId = req.tenantOrgId || 'org-acme-global-001';
     try {
       const rows = await executeMysqlQuery<Array<Record<string, unknown>>>(
-        'SELECT *, (purchased_seats - active_seats_assigned) as unused_seats FROM software_license_contracts WHERE org_id = ? ORDER BY purchased_seats DESC',
+        `SELECT c.id, c.org_id, c.vendor_name, c.product_name, c.matched_executable_or_domain,
+                c.purchased_seats, c.cost_per_seat_monthly, c.currency, c.contract_start_date,
+                c.contract_end_date, c.inactivity_reclaim_days, c.auto_reclaim_enabled,
+                COALESCE(COUNT(a.id), 0) as assigned_seats,
+                GREATEST(0, c.purchased_seats - COALESCE(COUNT(a.id), 0)) as unused_seats,
+                ROUND(GREATEST(0, c.purchased_seats - COALESCE(COUNT(a.id), 0)) * c.cost_per_seat_monthly, 2) as monthly_waste_usd
+         FROM software_license_contracts c
+         LEFT JOIN software_license_allocations a ON c.id = a.contract_id AND a.reclaim_status != 'RECLAIMED'
+         WHERE c.org_id = ?
+         GROUP BY c.id, c.org_id, c.vendor_name, c.product_name, c.matched_executable_or_domain,
+                  c.purchased_seats, c.cost_per_seat_monthly, c.currency, c.contract_start_date,
+                  c.contract_end_date, c.inactivity_reclaim_days, c.auto_reclaim_enabled
+         ORDER BY c.purchased_seats DESC`,
         [orgId]
       );
-      return { orgId, licenses: rows };
+      const totalContracts = rows.length;
+      const totalPurchasedSeats = rows.reduce((acc, r) => acc + Number(r.purchased_seats || 0), 0);
+      const totalUnusedSeats = rows.reduce((acc, r) => acc + Number(r.unused_seats || 0), 0);
+      const monthlyWasteUsd = rows.reduce((acc, r) => acc + Number(r.monthly_waste_usd || 0), 0);
+
+      return {
+        orgId,
+        totalContracts,
+        totalPurchasedSeats,
+        totalUnusedSeats,
+        monthlyWasteUsd,
+        licenses: rows,
+        contracts: rows,
+      };
     } catch {
-      return { orgId, licenses: [] };
+      return { orgId, totalContracts: 0, totalPurchasedSeats: 0, totalUnusedSeats: 0, monthlyWasteUsd: 0, licenses: [], contracts: [] };
     }
   });
 
@@ -526,9 +551,26 @@ export async function registerProjectsTasksTimesheetsAndBillingRoutes(
         toleranceMinutes: 5,
         reconciledRowsCount: findings.length,
         findings,
+        reconciliation: {
+          totalChecked: findings.length,
+          consistentCount: findings.filter((f) => f.isConsistent).length,
+          anomalyCount: findings.filter((f) => !f.isConsistent).length,
+          reconciliationStatus: findings.length > 0 ? 'COMPLETED' : 'NO_DATA',
+        },
       };
     } catch {
-      return { orgId, toleranceMinutes: 5, reconciledRowsCount: 0, findings: [] };
+      return {
+        orgId,
+        toleranceMinutes: 5,
+        reconciledRowsCount: 0,
+        findings: [],
+        reconciliation: {
+          totalChecked: 0,
+          consistentCount: 0,
+          anomalyCount: 0,
+          reconciliationStatus: 'NO_DATA',
+        },
+      };
     }
   });
 }

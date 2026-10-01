@@ -47,6 +47,16 @@ import {
 } from '../state/liveTelemetryState';
 import { broadcastLiveAudioChunk } from '../ws/realtimeGateway';
 
+function formatMysqlDatetime(isoOrDate?: string | Date): string {
+  try {
+    const d = isoOrDate ? new Date(isoOrDate) : new Date();
+    if (isNaN(d.getTime())) return new Date().toISOString().slice(0, 19).replace('T', ' ');
+    return d.toISOString().slice(0, 19).replace('T', ' ');
+  } catch {
+    return new Date().toISOString().slice(0, 19).replace('T', ' ');
+  }
+}
+
 const AgentTelemetryBatchSchema = z.object({
   deviceId: z.string(),
   employeeId: z.string(),
@@ -611,7 +621,7 @@ export async function registerHrCommsFieldAiAndAgentRoutes(
             c.caller_name || 'Customer',
             c.phone_number || '',
             c.call_type || 'INCOMING',
-            c.call_time_utc || new Date().toISOString(),
+            formatMysqlDatetime(c.call_time_utc),
             c.duration_seconds || 0,
             c.audio_url || null,
             c.notes || null,
@@ -672,7 +682,7 @@ export async function registerHrCommsFieldAiAndAgentRoutes(
             id,
             orgId,
             body.employee_id,
-            b.recorded_at_utc || new Date().toISOString(),
+            formatMysqlDatetime(b.recorded_at_utc),
             b.latitude,
             b.longitude,
             b.accuracy_meters || 5.0,
