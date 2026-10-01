@@ -18,6 +18,7 @@ import {
   ProductivityAndLicensesWorkspace,
   LiveMonitorMediaWorkspace,
 } from "./WorkspacesCore";
+import HydiEdgePayrollStudio from "./HydiEdgePayrollStudio";
 import {
   FolderKanban,
   CheckSquare,
@@ -2406,73 +2407,82 @@ export function HrPerfPayrollWorkspace({
           </h1>
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {["HR-001", "LEAVE-003", "PERF-004", "KPI-001", "OKR-001", "PAY-001", "EXP-001"].map((s) => (
+          {["PAY-001", "HR-001", "LEAVE-003", "PERF-004", "KPI-001", "OKR-001", "EXP-001"].map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => setActiveScreenId(s)}
               className={`px-3 py-1.5 rounded-lg text-xs font-mono ${
-                activeScreenId === s ? "bg-blue-600 text-white" : "bg-slate-900 text-slate-400 border border-slate-800"
+                activeScreenId === s ? "bg-blue-600 text-white font-bold" : "bg-slate-900 text-slate-400 border border-slate-800"
               }`}
             >
-              {s}
+              {s === "PAY-001" ? "PAY-001 • Payroll Studio" : s}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs">
-        <div className="hydi-card p-5 space-y-3">
-          <div className="font-mono text-emerald-400 font-bold">LEAVE-003 • ACCRUAL & PTO ENGINE</div>
-          <p className="text-slate-300">
-            Automated monthly accrual (+1.75 days/mo), carry-forward caps, and regional statutory holidays (DE, US, IN, PH, SG).
-          </p>
-          <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1 font-mono">
-            <div className="flex justify-between">
-              <span>Annual PTO Accrued:</span>
-              <span className="text-emerald-400">21.0 Days</span>
+      {activeScreenId === "PAY-001" ? (
+        <HydiEdgePayrollStudio />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs">
+            <div className="hydi-card p-5 space-y-3">
+              <div className="font-mono text-emerald-400 font-bold">LEAVE-003 • ACCRUAL & PTO ENGINE</div>
+              <p className="text-slate-300">
+                Automated monthly accrual (+1.75 days/mo), carry-forward caps, and regional statutory holidays (DE, US, IN, PH, SG).
+              </p>
+              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1 font-mono">
+                <div className="flex justify-between">
+                  <span>Annual PTO Accrued:</span>
+                  <span className="text-emerald-400">21.0 Days</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Used / Pending Approval:</span>
+                  <span className="text-amber-300">6.5 Days / 2.0 Days</span>
+                </div>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span>Used / Pending Approval:</span>
-              <span className="text-amber-300">6.5 Days / 2.0 Days</span>
-            </div>
-          </div>
-        </div>
 
-        <div className="hydi-card p-5 space-y-3">
-          <div className="font-mono text-blue-400 font-bold">PERF-004 & KPI-001 • 360° & AUTO-KPIs</div>
-          <p className="text-slate-300">
-            9-Box Talent Calibration Matrix paired with ClickHouse-fed KPI scorecards (Code Velocity, SLA %, CSAT).
-          </p>
-          <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1 font-mono">
-            <div className="flex justify-between">
-              <span>Q3 360° Completion Rate:</span>
-              <span className="text-blue-400">97.8%</span>
+            <div className="hydi-card p-5 space-y-3">
+              <div className="font-mono text-blue-400 font-bold">PERF-004 & KPI-001 • 360° & AUTO-KPIs</div>
+              <p className="text-slate-300">
+                9-Box Talent Calibration Matrix paired with ClickHouse-fed KPI scorecards (Code Velocity, SLA %, CSAT).
+              </p>
+              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1 font-mono">
+                <div className="flex justify-between">
+                  <span>Q3 360° Completion Rate:</span>
+                  <span className="text-blue-400">97.8%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>OKR Alignment (OKR-001):</span>
+                  <span className="text-cyan-300">84% On-Track</span>
+                </div>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span>OKR Alignment (OKR-001):</span>
-              <span className="text-cyan-300">84% On-Track</span>
-            </div>
-          </div>
-        </div>
 
-        <div className="hydi-card p-5 space-y-3">
-          <div className="font-mono text-violet-400 font-bold">PAY-001 & EXP-001 • PAYROLL & OCR EXPENSES</div>
-          <p className="text-slate-300">
-            Locked Timesheet (`TS-008`) to gross-to-net payroll calculation across 135+ currencies with Receipt OCR.
-          </p>
-          <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1 font-mono">
-            <div className="flex justify-between">
-              <span>Current Payroll Cycle:</span>
-              <span className="text-emerald-400">$1.48M Verified</span>
-            </div>
-            <div className="flex justify-between">
-              <span>OCR Expense Claims:</span>
-              <span className="text-white">42 Auto-Matched</span>
+            <div className="hydi-card p-5 space-y-3">
+              <div className="font-mono text-violet-400 font-bold">PAY-001 & EXP-001 • PAYROLL & OCR EXPENSES</div>
+              <p className="text-slate-300">
+                Locked Timesheet (`TS-008`) to gross-to-net payroll calculation across 135+ currencies with Receipt OCR.
+              </p>
+              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-1 font-mono">
+                <div className="flex justify-between">
+                  <span>Current Payroll Cycle:</span>
+                  <span className="text-emerald-400">$1.48M Verified</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>OCR Expense Claims:</span>
+                  <span className="text-white">42 Auto-Matched</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+          <div className="pt-4 border-t border-slate-800">
+            <HydiEdgePayrollStudio />
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -238,6 +238,32 @@ export default function HydiEdgeFieldSuite() {
   const [newVisitJobsite, setNewVisitJobsite] = useState<string>("Connaught Place Client Zone");
   const [newVisitDate, setNewVisitDate] = useState<string>("Today, 03:00 PM");
 
+  // Customers State
+  const [customers, setCustomers] = useState<any[]>([
+    {
+      id: "cust-01",
+      company_name: "Apex Global Enterprises",
+      contact_person: "Rajesh Mehra",
+      phone: "+91 98110 23456",
+      email: "rajesh.mehra@apexglobal.in",
+      address: "Connaught Place, Barakhamba Road, New Delhi 110001",
+    },
+    {
+      id: "cust-02",
+      company_name: "InnovateX Solutions Hub",
+      contact_person: "Sneha Rao",
+      phone: "+91 98450 67890",
+      email: "sneha@innovatex.tech",
+      address: "Cyber City, Phase 2, Gurugram, Haryana 122002",
+    },
+  ]);
+  const [showAddCustomerModal, setShowAddCustomerModal] = useState<boolean>(false);
+  const [newCustCompany, setNewCustCompany] = useState<string>("");
+  const [newCustPerson, setNewCustPerson] = useState<string>("");
+  const [newCustPhone, setNewCustPhone] = useState<string>("");
+  const [newCustEmail, setNewCustEmail] = useState<string>("");
+  const [newCustAddress, setNewCustAddress] = useState<string>("");
+
   // Mobile App Simulator State
   const [mobileMode, setMobileMode] = useState<"CONTINUOUS" | "INTERACTIVE">("CONTINUOUS");
   const [mobileTimerRunning, setMobileTimerRunning] = useState<boolean>(true);
@@ -287,6 +313,15 @@ export default function HydiEdgeFieldSuite() {
       .then((data) => {
         if (data?.activeFieldAgents && Array.isArray(data.activeFieldAgents)) {
           setAgents(data.activeFieldAgents);
+        }
+      })
+      .catch(() => {});
+
+    fetch("/api/v1/field/customers")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.customers && Array.isArray(data.customers)) {
+          setCustomers(data.customers);
         }
       })
       .catch(() => {});
@@ -346,6 +381,46 @@ export default function HydiEdgeFieldSuite() {
       }
     } catch {
       setShowAddFenceModal(false);
+    }
+  };
+
+  // Add field customer
+  const handleCreateCustomer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/v1/field/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          company_name: newCustCompany,
+          contact_person: newCustPerson,
+          phone: newCustPhone,
+          email: newCustEmail,
+          address: newCustAddress,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCustomers([
+          {
+            id: data.id || `cust-${Date.now()}`,
+            company_name: newCustCompany,
+            contact_person: newCustPerson,
+            phone: newCustPhone,
+            email: newCustEmail,
+            address: newCustAddress,
+          },
+          ...customers,
+        ]);
+        setShowAddCustomerModal(false);
+        setNewCustCompany("");
+        setNewCustPerson("");
+        setNewCustPhone("");
+        setNewCustEmail("");
+        setNewCustAddress("");
+      }
+    } catch {
+      setShowAddCustomerModal(false);
     }
   };
 
@@ -454,8 +529,9 @@ export default function HydiEdgeFieldSuite() {
           { id: "MAP_ROUTES", label: "2. Live Map & Route Replay", icon: MapPin },
           { id: "GEOFENCES", label: "3. Jobsites & Geofencing", icon: Shield },
           { id: "VISITS", label: "4. Client Visits & Proof", icon: Calendar },
-          { id: "EXPENSES", label: "5. Travel Mileage & Claims", icon: DollarSign },
-          { id: "MOBILE_APP", label: "6. Mobile App Companion", icon: Smartphone },
+          { id: "CUSTOMERS", label: "5. Customer Directory", icon: Building2 },
+          { id: "EXPENSES", label: "6. Travel Mileage & Claims", icon: DollarSign },
+          { id: "MOBILE_APP", label: "7. Mobile App Companion", icon: Smartphone },
         ].map((t) => {
           const Icon = t.icon;
           const isActive = activeSubTab === t.id;
@@ -810,7 +886,81 @@ export default function HydiEdgeFieldSuite() {
       )}
 
       {/* =========================================================================
-          PANEL 5: TRAVEL MILEAGE & EXPENSE APPROVALS
+          PANEL 5: FIELD CUSTOMER DIRECTORY (PARITY WITH FIELD VISITS DEMO)
+      ========================================================================= */}
+      {activeSubTab === "CUSTOMERS" && (
+        <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+            <div>
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-cyan-400" />
+                Field Customer & Client Directory
+              </h3>
+              <p className="text-xs text-slate-400">
+                Directory of customer locations and direct shortcuts to schedule field staff visits.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowAddCustomerModal(true)}
+              className="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow"
+            >
+              <Plus className="w-4 h-4" /> Add Customer
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {customers.map((c) => (
+              <div
+                key={c.id}
+                className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3 text-xs"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-bold text-white text-sm">{c.company_name}</h4>
+                    <p className="text-[11px] text-cyan-400 font-mono mt-0.5">{c.contact_person}</p>
+                  </div>
+                  <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono text-[10px]">
+                    VERIFIED
+                  </span>
+                </div>
+
+                <div className="space-y-1 font-mono text-[11px] text-slate-300">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-500">Phone:</span>
+                    <span className="text-white">{c.phone}</span>
+                  </div>
+                  {c.email && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-slate-500">Email:</span>
+                      <span className="text-slate-300 truncate">{c.email}</span>
+                    </div>
+                  )}
+                  <div className="flex items-start gap-1.5 pt-1 border-t border-slate-800/80">
+                    <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                    <span className="text-slate-400 text-[10px] leading-tight">{c.address}</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-800 flex justify-end">
+                  <button
+                    onClick={() => {
+                      setNewVisitPurpose(`Client Visit to ${c.company_name}`);
+                      setNewVisitJobsite(c.company_name);
+                      setShowAddVisitModal(true);
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/30 text-xs font-semibold transition"
+                  >
+                    Schedule Visit
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          PANEL 6: TRAVEL MILEAGE & EXPENSE APPROVALS
       ========================================================================= */}
       {activeSubTab === "EXPENSES" && (
         <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4">
@@ -1155,6 +1305,101 @@ export default function HydiEdgeFieldSuite() {
                   className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
                 >
                   Schedule Visit
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Customer Modal */}
+      {showAddCustomerModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0b1322] border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-cyan-400" />
+                Add Field Customer
+              </h3>
+              <button onClick={() => setShowAddCustomerModal(false)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateCustomer} className="space-y-3 text-xs font-mono">
+              <div>
+                <label className="block text-slate-300 mb-1">Company / Organization Name</label>
+                <input
+                  type="text"
+                  required
+                  value={newCustCompany}
+                  onChange={(e) => setNewCustCompany(e.target.value)}
+                  placeholder="e.g. Apex Global Enterprises"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1">Contact Person</label>
+                <input
+                  type="text"
+                  required
+                  value={newCustPerson}
+                  onChange={(e) => setNewCustPerson(e.target.value)}
+                  placeholder="e.g. Rajesh Mehra"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-slate-300 mb-1">Phone Number</label>
+                  <input
+                    type="text"
+                    required
+                    value={newCustPhone}
+                    onChange={(e) => setNewCustPhone(e.target.value)}
+                    placeholder="+91 98110 23456"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 mb-1">Email (Optional)</label>
+                  <input
+                    type="email"
+                    value={newCustEmail}
+                    onChange={(e) => setNewCustEmail(e.target.value)}
+                    placeholder="contact@company.com"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1">Full Physical Address</label>
+                <textarea
+                  required
+                  rows={2}
+                  value={newCustAddress}
+                  onChange={(e) => setNewCustAddress(e.target.value)}
+                  placeholder="e.g. Connaught Place, Barakhamba Road, New Delhi 110001"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddCustomerModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold"
+                >
+                  Save Customer
                 </button>
               </div>
             </form>

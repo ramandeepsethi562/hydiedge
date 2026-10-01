@@ -27,6 +27,7 @@ import { registerScreenRecordingRoutes } from './routes/screenRecordingRoutes';
 import { registerLiveMonitoringRoutes } from './routes/liveMonitoringRoutes';
 import { registerDeviceManagementRoutes } from './routes/deviceManagementRoutes';
 import { registerProjectManagementRoutes } from './routes/projectManagementRoutes';
+import { registerPayrollManagementRoutes } from './routes/payrollManagementRoutes';
 import { syncWorkforceFromMysql } from './state/liveTelemetryState';
 
 export async function buildHydiApiServer(): Promise<FastifyInstance> {
@@ -108,6 +109,7 @@ export async function buildHydiApiServer(): Promise<FastifyInstance> {
   await registerLiveMonitoringRoutes(app);
   await registerDeviceManagementRoutes(app);
   await registerProjectManagementRoutes(app);
+  await registerPayrollManagementRoutes(app);
 
   return app;
 }
