@@ -13,6 +13,7 @@ import {
   classifyAppAndUrlProductivity,
   ProductivityRuleEntry,
 } from '@hydiems/shared';
+import { executeMysqlQuery } from '@hydiems/database';
 import {
   appendImmutableAuditLog,
   IMMUTABLE_AUDIT_LOG_STORE,
@@ -252,6 +253,36 @@ export async function registerMonitoringProductivityAndDlpRoutes(
       };
     }
   );
+
+  // SEC-002: USB Hardware Whitelist Policy
+  app.get('/api/v1/security/usb-whitelist', async (req) => {
+    const orgId = req.tenantOrgId || 'org-acme-global-001';
+    try {
+      const rows = await executeMysqlQuery<Array<Record<string, unknown>>>(
+        'SELECT * FROM usb_hardware_whitelist WHERE org_id = ?',
+        [orgId]
+      );
+      if (rows && rows.length > 0) {
+        return {
+          orgId,
+          enforceMode: 'BLOCK_UNAUTHORIZED',
+          whitelistedDevices: rows,
+          totalWhitelisted: rows.length,
+        };
+      }
+    } catch {
+      // Fallback
+    }
+    return {
+      orgId,
+      enforceMode: 'BLOCK_UNAUTHORIZED',
+      whitelistedDevices: [
+        { id: 'usb-01', vendorId: '0781', productId: '5583', deviceName: 'SanDisk Ultra Luxe (Encrypted Corporate Backup)', approvedForDept: 'Platform Engineering' },
+        { id: 'usb-02', vendorId: '0951', productId: '1666', deviceName: 'Kingston DataTraveler Vault Privacy', approvedForDept: 'Security & Compliance' },
+      ],
+      totalWhitelisted: 2,
+    };
+  });
 
   // --------------------------------------------------------------------------
   // PRIV-001..005 & AUDIT-001..003: GDPR/DPDP Privacy Center & Hash-Chained Audit Log

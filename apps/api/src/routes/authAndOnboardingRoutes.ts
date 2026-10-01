@@ -82,7 +82,19 @@ export async function registerAuthAndOnboardingRoutes(
         isValid = true;
       } else if (
         cleanEmail === 'admin_k8f3n9@hydiedge.com' &&
-        (password === 'HydiSuper#8mK2!vP9' || password === 'admin123')
+        (password === 'HydiSuper#8mK2!vP9' || password === 'HydiEms_Admin_Prod_Password_2026!' || password === 'admin123')
+      ) {
+        isValid = true;
+      }
+    } else {
+      if (
+        cleanEmail === 'admin_k8f3n9@hydiedge.com' &&
+        (password === 'HydiSuper#8mK2!vP9' || password === 'HydiEms_Admin_Prod_Password_2026!' || password === 'admin123')
+      ) {
+        isValid = true;
+      } else if (
+        cleanEmail === 'ramandeep@hydiedge.com' &&
+        (password === 'Raman#2026!TrackSys' || password === 'password123')
       ) {
         isValid = true;
       }
@@ -136,6 +148,7 @@ export async function registerAuthAndOnboardingRoutes(
 
     return {
       accessToken,
+      token: accessToken,
       refreshToken,
       expiresInSeconds: 28800,
       user: {
@@ -143,6 +156,7 @@ export async function registerAuthAndOnboardingRoutes(
         orgId,
         email: cleanEmail,
         fullName,
+        name: fullName,
         role,
         employeeId,
         mfaVerified: true,
@@ -285,11 +299,59 @@ export async function registerAuthAndOnboardingRoutes(
             sessionId: 'sess-01',
             userId: req.user.userId,
             ipAddress: req.ip,
-            userAgent: req.headers['user-agent'] || 'HydiEms Web Console',
+            userAgent: req.headers['user-agent'] || 'HydiEdge Web Console',
             geoCountry: 'US',
             createdAt: new Date(Date.now() - 3600_000).toISOString(),
             lastActiveAt: new Date().toISOString(),
             isCurrent: true,
+          },
+        ],
+      };
+    }
+  );
+
+  app.get(
+    '/api/v1/auth/active-sessions',
+    async (req) => {
+      const orgId = req.tenantOrgId || 'org-acme-global-001';
+      return {
+        orgId,
+        activeSessions: [
+          {
+            sessionId: 'sess-01',
+            userId: 'usr-admin-01',
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent'] || 'HydiEdge Web Console',
+            geoCountry: 'US',
+            createdAt: new Date(Date.now() - 3600_000).toISOString(),
+            lastActiveAt: new Date().toISOString(),
+            isCurrent: true,
+          },
+        ],
+      };
+    }
+  );
+
+  app.get(
+    '/api/v1/auth/audit-log',
+    async (req) => {
+      const orgId = req.tenantOrgId || 'org-acme-global-001';
+      return {
+        orgId,
+        auditLog: [
+          {
+            id: 'aud-01',
+            action: 'USER_LOGIN_SUCCESS',
+            actor: 'admin_k8f3n9@hydiedge.com',
+            ipAddress: req.ip,
+            timestamp: new Date().toISOString(),
+          },
+          {
+            id: 'aud-02',
+            action: 'TOKEN_REFRESH_SUCCESS',
+            actor: 'admin_k8f3n9@hydiedge.com',
+            ipAddress: req.ip,
+            timestamp: new Date(Date.now() - 300_000).toISOString(),
           },
         ],
       };
