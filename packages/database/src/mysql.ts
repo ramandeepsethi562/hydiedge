@@ -78,25 +78,27 @@ export async function executeMysqlQuery<T = Record<string, unknown>[]>(
   sql: string,
   params: unknown[] = []
 ): Promise<T> {
-  if (!isOfflineDemoMode) {
-    try {
-      const activePool = getMysqlPool();
-      const [rows] = await activePool.query<RowDataPacket[] | ResultSetHeader>(sql, params);
-      return rows as unknown as T;
-    } catch {
+  try {
+    const activePool = getMysqlPool();
+    const [rows] = await activePool.query<RowDataPacket[] | ResultSetHeader>(sql, params);
+    return rows as unknown as T;
+  } catch (err: unknown) {
+    const error = err as { code?: string; message?: string };
+    const code = error?.code;
+    if (code === 'ECONNREFUSED' || code === 'ETIMEDOUT' || code === 'ENOTFOUND' || code === 'PROTOCOL_CONNECTION_LOST') {
       isOfflineDemoMode = true;
+      const normalized = sql.trim().toUpperCase();
+      if (normalized.startsWith('SELECT')) {
+        const tableMatch = sql.match(/FROM\s+`?([a-zA-Z0-9_]+)`?/i);
+        const tableName = tableMatch ? tableMatch[1] : 'unknown';
+        return (inMemoryRelationalStore[tableName] ?? []) as unknown as T;
+      }
+      return ({ affectedRows: 1, insertId: 0 } as unknown) as T;
     }
+    // For non-connection errors (like validation or syntax), log and rethrow
+    console.error('MySQL Query Error:', error?.message, 'in SQL:', sql);
+    throw err;
   }
-
-  // Graceful fallback in standalone/demo mode
-  const normalized = sql.trim().toUpperCase();
-  if (normalized.startsWith('SELECT')) {
-    const tableMatch = sql.match(/FROM\s+`?([a-zA-Z0-9_]+)`?/i);
-    const tableName = tableMatch ? tableMatch[1] : 'unknown';
-    return (inMemoryRelationalStore[tableName] ?? []) as unknown as T;
-  }
-
-  return ({ affectedRows: 1, insertId: 0 } as unknown) as T;
 }
 
 export async function executeMysqlTransaction<T>(
