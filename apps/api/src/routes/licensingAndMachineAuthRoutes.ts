@@ -117,7 +117,7 @@ export async function registerLicensingAndMachineAuthRoutes(app: FastifyInstance
 
       // 2. Insert Admin User
       await executeMysqlQuery(
-        `INSERT INTO users (id, org_id, email, password_hash, full_name, role, status)
+        `INSERT INTO users (id, org_id, email, password_hash, full_name, system_role, status)
          VALUES (?, ?, ?, ?, ?, 'ORG_ADMIN', 'ACTIVE')`,
         [userId, orgId, workEmail, crypto.createHash('sha256').update(password).digest('hex'), contactName]
       );
@@ -151,7 +151,7 @@ export async function registerLicensingAndMachineAuthRoutes(app: FastifyInstance
         `INSERT INTO organization_entitlements (id, org_id, plan_code, max_seats, active_seats, enabled_modules, enabled_addons, storage_quota_gb)
          VALUES (?, ?, ?, ?, 0, ?, ?, 250)`,
         [
-          `ent-${orgId}`,
+          `ent-${crypto.randomBytes(8).toString('hex')}`,
           orgId,
           planCode,
           Math.max(companySize, 10),
@@ -371,7 +371,7 @@ export async function registerLicensingAndMachineAuthRoutes(app: FastifyInstance
            price_per_user_monthly, billing_cycle, currency, status, is_trial,
            activated_at, expires_at, hwid_binding_required, allowed_features
          )
-         VALUES (?, ?, ?, ?, 0, ?, ?, 'INR', ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, 0, ?, ?, 'INR', ?, ?, ?, ?, ?, ?)`,
         [
           licenseId,
           orgId,
