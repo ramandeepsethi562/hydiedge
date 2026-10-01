@@ -24,7 +24,7 @@ export async function registerPayrollManagementRoutes(app: FastifyInstance) {
   // 1. SALARY COMPONENTS & CUSTOM FORMULA ENGINE
   // --------------------------------------------------------------------------
   app.get('/api/v1/payroll/components', async (req) => {
-    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global';
+    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global-001';
     try {
       const rows = await executeMysqlQuery<any[]>(
         `SELECT id, org_id, name, code, type, calculation_mode, formula_expression, is_taxable, is_active, created_at
@@ -65,7 +65,7 @@ export async function registerPayrollManagementRoutes(app: FastifyInstance) {
   });
 
   app.post('/api/v1/payroll/components', async (req, reply) => {
-    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global';
+    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global-001';
     const body = req.body as {
       name: string;
       code: string;
@@ -104,7 +104,7 @@ export async function registerPayrollManagementRoutes(app: FastifyInstance) {
   // 2. SALARY STRUCTURES & BULK ASSIGNMENTS
   // --------------------------------------------------------------------------
   app.get('/api/v1/payroll/structures', async (req) => {
-    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global';
+    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global-001';
     try {
       const rows = await executeMysqlQuery<any[]>(
         `SELECT s.id, s.org_id, s.name, s.currency, s.description, s.components_json, s.is_active, s.created_at,
@@ -158,7 +158,7 @@ export async function registerPayrollManagementRoutes(app: FastifyInstance) {
   });
 
   app.post('/api/v1/payroll/structures', async (req, reply) => {
-    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global';
+    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global-001';
     const body = req.body as {
       name: string;
       currency?: string;
@@ -181,7 +181,7 @@ export async function registerPayrollManagementRoutes(app: FastifyInstance) {
   });
 
   app.post('/api/v1/payroll/structures/bulk-assign', async (req) => {
-    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global';
+    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global-001';
     const body = req.body as {
       structure_id: string;
       department?: string;
@@ -223,7 +223,7 @@ export async function registerPayrollManagementRoutes(app: FastifyInstance) {
   // 3. PAY RUN WIZARD & HISTORICAL RUNS
   // --------------------------------------------------------------------------
   app.get('/api/v1/payroll/runs', async (req) => {
-    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global';
+    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global-001';
     try {
       const runs = await executeMysqlQuery<any[]>(
         `SELECT id, org_id, run_code, period_start_date, period_end_date, pay_date, currency,
@@ -286,7 +286,7 @@ export async function registerPayrollManagementRoutes(app: FastifyInstance) {
   });
 
   app.post('/api/v1/payroll/runs', async (req, reply) => {
-    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global';
+    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global-001';
     const body = req.body as {
       period_start_date: string;
       period_end_date: string;
@@ -374,7 +374,7 @@ export async function registerPayrollManagementRoutes(app: FastifyInstance) {
   // --------------------------------------------------------------------------
   app.get('/api/v1/payroll/runs/:id/payslips', async (req) => {
     const params = req.params as { id: string };
-    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global';
+    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global-001';
     try {
       let slips = await executeMysqlQuery<any[]>(
         `SELECT p.id, p.employee_id, COALESCE(u.full_name, 'Employee') as employee_name,
@@ -563,7 +563,7 @@ export async function registerPayrollManagementRoutes(app: FastifyInstance) {
   // 7. MULTI-DEPARTMENT CLEARANCE TEMPLATE (OFFBOARDING EXIT WORKFLOW)
   // --------------------------------------------------------------------------
   app.get('/api/v1/payroll/clearance-templates', async (req) => {
-    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global';
+    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global-001';
     try {
       const offboardingEmps = await executeMysqlQuery<any[]>(
         `SELECT o.id, o.employee_id, o.departure_type, o.last_working_date, o.status as offboarding_status,
@@ -622,7 +622,7 @@ export async function registerPayrollManagementRoutes(app: FastifyInstance) {
   });
 
   app.post('/api/v1/payroll/clearance-templates/signoff', async (req, reply) => {
-    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global';
+    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global-001';
     const body = req.body as {
       employee_id: string;
       department_name: 'IT_INFRASTRUCTURE' | 'ADMIN_FACILITIES' | 'HR_OPERATIONS' | 'FINANCE_ACCOUNTS' | 'OPERATIONS' | 'LEGAL';
@@ -658,7 +658,7 @@ export async function registerPayrollManagementRoutes(app: FastifyInstance) {
   // 8. FIELD CUSTOMER DIRECTORY (PARITY WITH FIELD VISITS DEMO)
   // --------------------------------------------------------------------------
   app.get('/api/v1/field/customers', async (req) => {
-    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global';
+    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global-001';
     try {
       const customers = await executeMysqlQuery<any[]>(
         `SELECT id, org_id, company_name, contact_person, phone, email, address, latitude, longitude, created_at
@@ -724,7 +724,7 @@ export async function registerPayrollManagementRoutes(app: FastifyInstance) {
   });
 
   app.post('/api/v1/field/customers', async (req, reply) => {
-    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global';
+    const orgId = (req.headers['x-org-id'] as string) || 'org-acme-global-001';
     const body = req.body as {
       company_name: string;
       contact_person: string;
