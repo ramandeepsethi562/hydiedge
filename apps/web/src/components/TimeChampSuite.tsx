@@ -356,15 +356,15 @@ export default function TimeChampSuite() {
 
   return (
     <div className="space-y-6">
-      {/* 1. Header Banner & Mode Selector matching TimeChamp Video */}
+      {/* 1. Header Banner & Mode Selector */}
       <div className="hydi-card p-5 border-emerald-500/30 bg-gradient-to-r from-slate-950 via-[#0a1628] to-slate-950 rounded-2xl shadow-xl flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold border border-emerald-500/30 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-              TIME CHAMP PARITY SUITE
+              HYDIEDGE WORKFORCE TRACKING SUITE
             </span>
-            <span className="text-xs font-mono text-cyan-400">Live 25-Min Demo Walkthrough Equivalent</span>
+            <span className="text-xs font-mono text-cyan-400">Enterprise High-Precision Time Telemetry</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-white mt-1">
             Time Tracking, Behavior Bar & Attendance Analytics
@@ -1381,7 +1381,7 @@ export default function TimeChampSuite() {
             <div>
               <h2 className="text-base font-bold text-white flex items-center gap-2">
                 <FileText className="w-4 h-4 text-emerald-400" />
-                12 Official TimeChamp Pre-Built Enterprise Reports
+                12 Official HydiEdge Pre-Built Enterprise Reports
               </h2>
               <p className="text-xs text-slate-400">
                 Exportable compliance matrices including Monthly Attendance (P/A/HP/WO), Late Employees with TLC & ALT, and BPO Shrinkage %.

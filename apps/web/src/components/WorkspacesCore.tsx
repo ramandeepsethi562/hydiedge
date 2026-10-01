@@ -20,6 +20,8 @@ import {
 
 import { RightDrawerContext } from "./GlobalShell";
 import TimeChampSuite from "./TimeChampSuite";
+import HydiEdgeFieldSuite from "./HydiEdgeFieldSuite";
+import HydiEdgeTelephonySuite from "./HydiEdgeTelephonySuite";
 
 import {
 
@@ -238,9 +240,7 @@ export function DashboardsWorkspace({
 }: SharedWorkspaceProps) {
 
   const [dashView, setDashView] = useState<
-
-    "DASH-001" | "DASH-002" | "DASH-003" | "DB-001" | "REP-001" | "TIMECHAMP-SHOWCASE" | "ORG-PROFILE" | "ORG-HIERARCHY"
-
+    "DASH-001" | "DASH-002" | "DASH-003" | "DB-001" | "REP-001" | "TIMECHAMP-SHOWCASE" | "HYDIEDGE-WORKFORCE-SUITE" | "HYDIEDGE-FIELD-SUITE" | "HYDIEDGE-TELEPHONY-SUITE" | "ORG-PROFILE" | "ORG-HIERARCHY"
   >("DASH-001");
 
   const [tcBrochureSubTab, setTcBrochureSubTab] = useState<
@@ -895,10 +895,10 @@ export function DashboardsWorkspace({
 
             { id: "REP-001", label: "REP-001 BI & Capacity" },
 
-            { id: "TIMECHAMP-SHOWCASE", label: "★ Time Champ Brochure Parity (Pages 1-10)" },
-
+            { id: "TIMECHAMP-SHOWCASE", label: "★ HydiEdge Workforce Suite (Time & Attendance)" },
+            { id: "HYDIEDGE-FIELD-SUITE", label: "★ HydiEdge Field Staff & GPS Tracking" },
+            { id: "HYDIEDGE-TELEPHONY-SUITE", label: "★ HydiEdge Mobile Telephony & Calls" },
             { id: "ORG-PROFILE", label: "★ Module 01: Organization Profile (Panel 1)" },
-
             { id: "ORG-HIERARCHY", label: "★ Module 02: Org Hierarchy (3 Panels)" },
 
           ].map((tab) => (
@@ -1869,6 +1869,14 @@ export function DashboardsWorkspace({
         </div>
       </div>
 
+      )}
+
+      {dashView === "HYDIEDGE-FIELD-SUITE" && (
+        <HydiEdgeFieldSuite />
+      )}
+
+      {dashView === "HYDIEDGE-TELEPHONY-SUITE" && (
+        <HydiEdgeTelephonySuite />
       )}
 
 
@@ -8710,7 +8718,7 @@ export function TimeAttendanceShrinkageWorkspace({
                 : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30"
             }`}
           >
-            ★ TimeChamp Suite (25-Min Demo)
+            ★ HydiEdge Workforce Suite
           </button>
 
           {["TIME-001", "TIME-007", "TIME-008", "SHIFT-001", "ATT-001", "ATT-006", "ATT-010"].map((s) => (
@@ -13876,7 +13884,7 @@ export function ProductivityAndLicensesWorkspace({
                 : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30"
             }`}
           >
-            ★ TimeChamp Suite (25-Min Demo)
+            ★ HydiEdge Workforce Suite
           </button>
 
           <button
