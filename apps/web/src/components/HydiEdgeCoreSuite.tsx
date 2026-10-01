@@ -44,7 +44,7 @@ import {
 } from "lucide-react";
 
 // Types
-export type TimeChampTab =
+export type HydiEdgeCoreTab =
   | "OVERVIEW"
   | "ATTENDANCE_BEHAVIOR"
   | "TIME_CLAIM_QUEUE"
@@ -100,8 +100,8 @@ interface SuspiciousActivityIncident {
   status: "INVESTIGATING" | "RESOLVED" | "FLAGGED_HR";
 }
 
-export default function TimeChampSuite() {
-  const [activeTab, setActiveTab] = useState<TimeChampTab>("OVERVIEW");
+export default function HydiEdgeCoreSuite() {
+  const [activeTab, setActiveTab] = useState<HydiEdgeCoreTab>("OVERVIEW");
   const [dateRange, setDateRange] = useState<"TODAY" | "YESTERDAY" | "THIS_WEEK" | "LAST_WEEK" | "MONTH">("TODAY");
   const [selectedTeam, setSelectedTeam] = useState<string>("ALL");
   const [selectedUserFilter, setSelectedUserFilter] = useState<string>("ALL");
@@ -425,7 +425,7 @@ export default function TimeChampSuite() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as TimeChampTab)}
+              onClick={() => setActiveTab(tab.id as HydiEdgeCoreTab)}
               className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
                 isActive
                   ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 shadow-sm"
@@ -453,7 +453,7 @@ export default function TimeChampSuite() {
       ========================================================================= */}
       {activeTab === "OVERVIEW" && (
         <div className="space-y-6">
-          {/* Top 4 KPI Cards from TimeChamp video */}
+          {/* Top 4 KPI Cards for HydiEdge Core Suite */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
               <div className="flex items-center justify-between text-xs text-slate-400 font-mono">

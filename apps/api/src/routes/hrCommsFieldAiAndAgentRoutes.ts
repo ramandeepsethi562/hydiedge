@@ -584,6 +584,15 @@ export async function registerHrCommsFieldAiAndAgentRoutes(
         phone_number: string;
         email?: string;
       }>;
+      breadcrumbs?: Array<{
+        latitude: number;
+        longitude: number;
+        accuracy_meters?: number;
+        speed_kmh?: number;
+        battery_pct?: number;
+        is_mock_location?: boolean;
+        recorded_at_utc?: string;
+      }>;
     };
 
     const orgId = req.tenantOrgId || 'org-acme-global-001';
@@ -634,7 +643,56 @@ export async function registerHrCommsFieldAiAndAgentRoutes(
       }
     }
 
-    return { success: true, processed: true };
+    if (Array.isArray(body.contacts)) {
+      for (const ct of body.contacts) {
+        const id = `ct-${crypto.randomBytes(6).toString('hex')}`;
+        await executeMysqlQuery(
+          `INSERT INTO mobile_contacts (id, org_id, employee_id, contact_name, phone_number, email, synced_at_utc)
+           VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP(3))
+           ON DUPLICATE KEY UPDATE contact_name = VALUES(contact_name), email = VALUES(email), synced_at_utc = CURRENT_TIMESTAMP(3)`,
+          [
+            id,
+            orgId,
+            body.employee_id,
+            ct.contact_name || 'Contact',
+            ct.phone_number || '',
+            ct.email || null,
+          ]
+        );
+      }
+    }
+
+    if (Array.isArray(body.breadcrumbs)) {
+      for (const b of body.breadcrumbs) {
+        const id = `gps-${crypto.randomBytes(6).toString('hex')}`;
+        await executeMysqlQuery(
+          `INSERT INTO field_gps_breadcrumbs (id, org_id, employee_id, recorded_at_utc, latitude, longitude, accuracy_meters, speed_kmh, battery_pct, is_mock_location_flagged)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            id,
+            orgId,
+            body.employee_id,
+            b.recorded_at_utc || new Date().toISOString(),
+            b.latitude,
+            b.longitude,
+            b.accuracy_meters || 5.0,
+            b.speed_kmh || 0.0,
+            b.battery_pct || 90,
+            b.is_mock_location ? 1 : 0,
+          ]
+        );
+      }
+    }
+
+    return {
+      success: true,
+      processed: true,
+      callsCount: body.calls?.length || 0,
+      screenTimeCount: body.screen_time?.length || 0,
+      contactsCount: body.contacts?.length || 0,
+      breadcrumbsCount: body.breadcrumbs?.length || 0,
+      timestamp: new Date().toISOString(),
+    };
   });
 
   app.get('/api/v1/mobile/call-logs', async () => {
@@ -1184,7 +1242,7 @@ export async function registerHrCommsFieldAiAndAgentRoutes(
     };
   });
 
-  // TimeChamp Legacy API Alias: ActTracker/ActTrackerApi/UpsertSystemInformationInServer
+  // HydiEdge Desktop Agent Compatibility Endpoint: ActTracker/ActTrackerApi/UpsertSystemInformationInServer
   app.post('/ActTracker/ActTrackerApi/UpsertSystemInformationInServer', async (req) => {
     const body = (req.body || {}) as Record<string, any>;
     const record = await ingestLiveSystemInfo(body);
@@ -1204,7 +1262,7 @@ export async function registerHrCommsFieldAiAndAgentRoutes(
     };
   });
 
-  // TimeChamp Legacy API Alias: ActTracker/ActTrackerApi/WorkTimeMatrixAction
+  // HydiEdge Desktop Agent Compatibility Endpoint: ActTracker/ActTrackerApi/WorkTimeMatrixAction
   app.post('/ActTracker/ActTrackerApi/WorkTimeMatrixAction', async (req) => {
     const body = (req.body || {}) as Record<string, any>;
     const record = await ingestWorkTimeMatrixViolation(body);
@@ -1214,7 +1272,7 @@ export async function registerHrCommsFieldAiAndAgentRoutes(
     };
   });
 
-  // TimeChamp Legacy API Alias: ActTracker/ActTrackerApi/GetTrackerConfigurationForAgent
+  // HydiEdge Desktop Agent Compatibility Endpoint: ActTracker/ActTrackerApi/GetTrackerConfigurationForAgent
   app.get('/ActTracker/ActTrackerApi/GetTrackerConfigurationForAgent', async () => {
     return {
       Success: true,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   INITIAL_DLP_INCIDENTS,
   INITIAL_EMPLOYEES,
@@ -233,6 +233,126 @@ export function ProjectsTasksBillingWorkspace({
   const [selectedProjectId, setSelectedProjectId] = useState<string>("proj-hydi-v25");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "IN_PROGRESS" | "PLANNING" | "ON_HOLD" | "COMPLETED" | "ARCHIVED">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Task state connected to real MySQL API
+  const [taskList, setTaskList] = useState<Array<{
+    id: string;
+    key: string;
+    title: string;
+    status: 'BACKLOG' | 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'BLOCKED' | 'DONE';
+    priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    assignee: string;
+    pts: string;
+    projectId?: string;
+  }>>([
+    { id: "task-01", key: "TASK-401", title: "ClickHouse 90-Day Regex Reclassifier", pts: "8h", assignee: "Ramandeep", priority: "HIGH", status: "TODO" },
+    { id: "task-02", key: "BUG-118", title: "Fix Multi-Monitor WebRTC DPI Scaling", pts: "5h", assignee: "Ramandeep", priority: "CRITICAL", status: "BACKLOG" },
+    { id: "task-03", key: "TASK-404", title: "USB VID/PID Kernel Filter Driver", pts: "13h", assignee: "Ramandeep", priority: "CRITICAL", status: "IN_PROGRESS" },
+    { id: "task-04", key: "TASK-409", title: "BPO Shrinkage SLA Forecasting", pts: "5h", assignee: "Ramandeep", priority: "MEDIUM", status: "IN_PROGRESS" },
+    { id: "task-05", key: "TASK-398", title: "SAML 2.0 JIT Role Group Mapping", pts: "5h", assignee: "Ramandeep", priority: "HIGH", status: "IN_REVIEW" },
+    { id: "task-06", key: "TASK-390", title: "SHA-256 Audit Chain Verifier", pts: "8h", assignee: "Ramandeep", priority: "HIGH", status: "DONE" },
+  ]);
+
+  const [createTaskModalOpen, setCreateTaskModalOpen] = useState(false);
+  const [newTaskForm, setNewTaskForm] = useState({
+    title: "",
+    priority: "HIGH" as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
+    estimatedHours: 8,
+    status: "TODO" as "BACKLOG" | "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "BLOCKED" | "DONE",
+  });
+
+  // Timesheets state connected to real MySQL API
+  const [timesheetList, setTimesheetList] = useState<Array<{
+    id: string;
+    emp: string;
+    period: string;
+    bill: string;
+    tot: string;
+    status: TimesheetState;
+    ts: string;
+  }>>([
+    { id: "ts-2026-w39", emp: "Ramandeep", period: "2026-09-22 - 2026-09-28", bill: "40.0", tot: "42.0", status: "SUBMITTED", ts: "2026-09-28 17:00:00" },
+    { id: "ts-2026-w40", emp: "Ramandeep", period: "2026-09-29 - 2026-10-05", bill: "38.5", tot: "40.0", status: "SUBMITTED", ts: "2026-10-01 12:00:00" },
+  ]);
+
+  // Real Database Synchronizer (Projects, Tasks, Timesheets, Invoices)
+  useEffect(() => {
+    fetch('/api/v1/projects')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && data.success && Array.isArray(data.projects) && data.projects.length > 0) {
+          const mapped: ProjectRecord[] = data.projects.map((p: any) => ({
+            id: p.id,
+            code: p.code || p.project_key || 'PRJ',
+            name: p.name,
+            description: p.description || '',
+            client: p.client || p.clientName || 'Enterprise Client',
+            clientContact: p.clientContact || 'client@enterprise.com',
+            manager: p.manager || 'Ramandeep',
+            managerEmail: p.managerEmail || 'ramandeep@hydiedge.com',
+            membersCount: p.membersCount || 1,
+            membersList: p.membersList || [
+              { id: 'emp-win-ramandeep', name: 'Ramandeep', role: 'Lead Architect', allocationPct: 100, hourlyRate: 175, costRate: 90, hoursLogged: 120 }
+            ],
+            budgetTotal: Number(p.budgetTotal || p.budget_amount || 75000),
+            budgetSpent: Number(p.budgetSpent || 18500),
+            budgetRemaining: Number(p.budgetRemaining || 56500),
+            budgetHours: Number(p.budgetHours || p.estimated_hours || 1000),
+            loggedHours: Number(p.loggedHours || 240),
+            burnRatePct: Number(p.burnRatePct || 24),
+            deadline: p.deadline || '2026-12-31',
+            daysRemaining: 90,
+            isOverdue: false,
+            status: p.status === 'ARCHIVED' ? 'ARCHIVED' : (p.status || 'IN_PROGRESS'),
+            progressPct: Number(p.progressPct || 45),
+            healthScore: 95,
+            cpi: 1.05,
+            spi: 1.02,
+            activeSprint: p.activeSprint || 'Sprint 42 — Core Production',
+          }));
+          setProjectList(mapped);
+          if (mapped.length > 0 && !mapped.some((x) => x.id === selectedProjectId)) {
+            setSelectedProjectId(mapped[0].id);
+          }
+        }
+      })
+      .catch((e) => console.error('Failed to fetch projects from API:', e));
+
+    fetch('/api/v1/tasks')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && data.success && Array.isArray(data.tasks) && data.tasks.length > 0) {
+          setTaskList(data.tasks.map((t: any) => ({
+            id: t.id,
+            key: t.task_key || t.key || t.id,
+            title: t.title,
+            status: t.status || 'TODO',
+            priority: t.priority || 'HIGH',
+            assignee: t.assignee || t.assignee_name || 'Ramandeep',
+            pts: `${Math.round((t.estimated_minutes || 240) / 60)}h`,
+            projectId: t.project_id,
+          })));
+        }
+      })
+      .catch((e) => console.error('Failed to fetch tasks from API:', e));
+
+    fetch('/api/v1/timesheets')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && data.success && Array.isArray(data.timesheets) && data.timesheets.length > 0) {
+          setTimesheetList(data.timesheets.map((ts: any) => ({
+            id: ts.timesheet_key || ts.id,
+            emp: ts.employee_name || 'Ramandeep',
+            period: `${ts.period_start_date} - ${ts.period_end_date}`,
+            bill: String(ts.total_billable_hours || '40.0'),
+            tot: String(ts.total_hours || '40.0'),
+            status: (ts.status as TimesheetState) || 'SUBMITTED',
+            ts: ts.locked_at ? String(ts.locked_at) : 'Unlocked',
+          })));
+        }
+      })
+      .catch((e) => console.error('Failed to fetch timesheets from API:', e));
+  }, []);
   
   // Modals
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -281,7 +401,7 @@ export function ProjectsTasksBillingWorkspace({
     return true;
   });
 
-  const handleCreateProject = () => {
+  const handleCreateProject = async () => {
     const newProj: ProjectRecord = {
       id: `proj-${Date.now()}`,
       code: newProjectForm.code.toUpperCase(),
@@ -314,6 +434,69 @@ export function ProjectsTasksBillingWorkspace({
     setProjectList([newProj, ...projectList]);
     setSelectedProjectId(newProj.id);
     setCreateModalOpen(false);
+
+    try {
+      await fetch('/api/v1/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectKey: newProj.code,
+          name: newProj.name,
+          description: newProj.description,
+          budgetAmount: newProj.budgetTotal,
+          estimatedHours: newProj.budgetHours,
+          targetCompletionDate: newProj.deadline,
+        }),
+      });
+    } catch (e) {
+      console.error('Failed to create project on server:', e);
+    }
+  };
+
+  const handleCreateTask = async () => {
+    if (!newTaskForm.title.trim()) return;
+    const newTask = {
+      id: `task-${Date.now()}`,
+      key: `TASK-${Math.floor(500 + Math.random() * 400)}`,
+      title: newTaskForm.title,
+      status: newTaskForm.status,
+      priority: newTaskForm.priority,
+      assignee: "Ramandeep",
+      pts: `${newTaskForm.estimatedHours}h`,
+      projectId: selectedProjectId,
+    };
+    setTaskList([newTask, ...taskList]);
+    setCreateTaskModalOpen(false);
+    setNewTaskForm({ title: "", priority: "HIGH", estimatedHours: 8, status: "TODO" });
+
+    try {
+      await fetch('/api/v1/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: selectedProjectId,
+          title: newTask.title,
+          priority: newTask.priority,
+          estimatedMinutes: newTaskForm.estimatedHours * 60,
+          status: newTask.status,
+        }),
+      });
+    } catch (e) {
+      console.error('Failed to create task on server:', e);
+    }
+  };
+
+  const handleUpdateTaskStatus = async (taskId: string, newStatus: 'BACKLOG' | 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'BLOCKED' | 'DONE') => {
+    setTaskList((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)));
+    try {
+      await fetch(`/api/v1/tasks/${taskId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+    } catch (e) {
+      console.error('Failed to patch task status:', e);
+    }
   };
 
   const handleOpenEdit = () => {
@@ -762,19 +945,7 @@ export function ProjectsTasksBillingWorkspace({
                   </span>
                   <button
                     type="button"
-                    onClick={() =>
-                      setDrawerContext({
-                        type: "TASK",
-                        title: "TASK-450: Add Zero-Copy WebRTC RingBuffer",
-                        subtitle: "Sprint 42 • In Progress • Story Points: 8",
-                        metadata: {
-                          Assignee: "Ramandeep",
-                          Project: activeProject.name,
-                          Status: "IN_PROGRESS",
-                          Priority: "CRITICAL",
-                        },
-                      })
-                    }
+                    onClick={() => setCreateTaskModalOpen(true)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold"
                   >
                     <Plus className="w-3.5 h-3.5" /> New Task
@@ -784,36 +955,30 @@ export function ProjectsTasksBillingWorkspace({
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3.5 text-xs">
                   {[
                     {
-                      col: "BACKLOG",
-                      items: [
-                        { id: "TASK-401", title: "ClickHouse 90-Day Regex Reclassifier", pts: "8 SP", assignee: "Ramandeep", priority: "HIGH" },
-                        { id: "BUG-118", title: "Fix Multi-Monitor WebRTC DPI Scaling", pts: "5 SP", assignee: "Ramandeep", priority: "CRITICAL" },
-                      ],
+                      col: "BACKLOG / TO DO",
+                      targetStatus: "TODO" as const,
+                      items: taskList.filter((t) => t.status === "BACKLOG" || t.status === "TODO"),
                     },
                     {
                       col: "IN PROGRESS",
-                      items: [
-                        { id: "TASK-404", title: "USB VID/PID Kernel Filter Driver", pts: "13 SP", assignee: "Ramandeep", priority: "CRITICAL" },
-                        { id: "TASK-409", title: "BPO Shrinkage SLA Forecasting", pts: "5 SP", assignee: "Ramandeep", priority: "MEDIUM" },
-                      ],
+                      targetStatus: "IN_PROGRESS" as const,
+                      items: taskList.filter((t) => t.status === "IN_PROGRESS"),
                     },
                     {
                       col: "CODE REVIEW",
-                      items: [
-                        { id: "TASK-398", title: "SAML 2.0 JIT Role Group Mapping", pts: "5 SP", assignee: "Ramandeep", priority: "HIGH" },
-                      ],
+                      targetStatus: "IN_REVIEW" as const,
+                      items: taskList.filter((t) => t.status === "IN_REVIEW" || t.status === "BLOCKED"),
                     },
                     {
                       col: "DONE & VERIFIED",
-                      items: [
-                        { id: "TASK-390", title: "SHA-256 Audit Chain Verifier", pts: "8 SP", assignee: "Ramandeep", priority: "HIGH" },
-                      ],
+                      targetStatus: "DONE" as const,
+                      items: taskList.filter((t) => t.status === "DONE"),
                     },
                   ].map((column) => (
                     <div key={column.col} className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2.5">
                       <div className="font-mono text-[11px] font-bold text-blue-400 flex items-center justify-between">
                         <span>{column.col}</span>
-                        <span className="text-slate-500 font-normal">{column.items.length}</span>
+                        <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px]">{column.items.length}</span>
                       </div>
                       {column.items.map((card) => (
                         <div
@@ -821,13 +986,14 @@ export function ProjectsTasksBillingWorkspace({
                           onClick={() =>
                             setDrawerContext({
                               type: "TASK",
-                              title: `${card.id}: ${card.title}`,
+                              title: `${card.key}: ${card.title}`,
                               subtitle: `Assigned to ${card.assignee} • ${card.pts}`,
                               metadata: {
-                                "Task ID": card.id,
-                                "Story Points": card.pts,
+                                "Task ID": card.key,
+                                "Estimate": card.pts,
                                 Assignee: card.assignee,
                                 Priority: card.priority,
+                                Status: card.status,
                                 Project: activeProject.name,
                               },
                             })
@@ -835,13 +1001,39 @@ export function ProjectsTasksBillingWorkspace({
                           className="p-3 rounded-lg bg-slate-950 border border-slate-800 hover:border-blue-500/50 cursor-pointer space-y-1.5 transition"
                         >
                           <div className="flex items-center justify-between font-mono text-[10px]">
-                            <span className="text-cyan-400">{card.id}</span>
-                            <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">{card.priority}</span>
+                            <span className="text-cyan-400 font-bold">{card.key}</span>
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                              card.priority === 'CRITICAL' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' :
+                              card.priority === 'HIGH' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' :
+                              'bg-slate-800 text-slate-300'
+                            }`}>{card.priority}</span>
                           </div>
                           <div className="font-semibold text-white line-clamp-2">{card.title}</div>
-                          <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                          <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1" onClick={(e) => e.stopPropagation()}>
                             <span>{card.assignee}</span>
-                            <span className="font-mono text-emerald-400 font-bold">{card.pts}</span>
+                            <div className="flex items-center gap-1">
+                              {card.status !== "IN_PROGRESS" && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateTaskStatus(card.id, "IN_PROGRESS")}
+                                  className="px-1.5 py-0.5 rounded bg-blue-600/30 hover:bg-blue-600 text-blue-200 text-[9px] font-mono transition"
+                                  title="Start Task"
+                                >
+                                  Start
+                                </button>
+                              )}
+                              {card.status !== "DONE" && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateTaskStatus(card.id, "DONE")}
+                                  className="px-1.5 py-0.5 rounded bg-emerald-600/30 hover:bg-emerald-600 text-emerald-200 text-[9px] font-mono transition"
+                                  title="Complete Task"
+                                >
+                                  Done
+                                </button>
+                              )}
+                              <span className="font-mono text-emerald-400 font-bold text-[10px] ml-1">{card.pts}</span>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -974,11 +1166,7 @@ export function ProjectsTasksBillingWorkspace({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800/60 bg-slate-950/60">
-                      {[
-                        { id: "TS-2026-W39-01", emp: "Ramandeep", period: "Sep 22 - Sep 28", bill: "38.5", tot: "42.0", status: tsState, ts: "2026-09-28 17:00:00" },
-                        { id: "TS-2026-W39-02", emp: "Ramandeep", period: "Sep 22 - Sep 28", bill: "40.0", tot: "44.5", status: tsState, ts: "2026-09-28 17:00:00" },
-                        { id: "TS-2026-W39-03", emp: "Ramandeep", period: "Sep 22 - Sep 28", bill: "32.0", tot: "36.0", status: tsState, ts: "2026-09-28 17:00:00" },
-                      ].map((row) => (
+                      {timesheetList.map((row) => (
                         <tr key={row.id}>
                           <td className="p-3 font-mono font-bold text-blue-400">{row.id}</td>
                           <td className="p-3 font-semibold text-white">{row.emp}</td>
@@ -1245,6 +1433,84 @@ export function ProjectsTasksBillingWorkspace({
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+            {/* CREATE TASK MODAL */}
+      {createTaskModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="hydi-card p-6 max-w-md w-full space-y-4 border-blue-500/60 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="font-bold text-white text-base">Create Kanban Task (POST /api/v1/tasks)</h3>
+              <button type="button" onClick={() => setCreateTaskModalOpen(false)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="text-slate-400 block mb-1">Task Title</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Implement DirectX 11 GPU Frame Buffer"
+                  value={newTaskForm.title}
+                  onChange={(e) => setNewTaskForm({ ...newTaskForm, title: e.target.value })}
+                  className="w-full px-3 py-1.5 rounded bg-slate-900 border border-slate-700 text-white"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-slate-400 block mb-1">Priority</label>
+                  <select
+                    value={newTaskForm.priority}
+                    onChange={(e) => setNewTaskForm({ ...newTaskForm, priority: e.target.value as any })}
+                    className="w-full px-3 py-1.5 rounded bg-slate-900 border border-slate-700 text-white"
+                  >
+                    <option value="LOW">LOW</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="HIGH">HIGH</option>
+                    <option value="CRITICAL">CRITICAL</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-slate-400 block mb-1">Estimate (Hours)</label>
+                  <input
+                    type="number"
+                    value={newTaskForm.estimatedHours}
+                    onChange={(e) => setNewTaskForm({ ...newTaskForm, estimatedHours: Number(e.target.value) })}
+                    className="w-full px-3 py-1.5 rounded bg-slate-900 border border-slate-700 text-white font-mono"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-slate-400 block mb-1">Initial Status</label>
+                <select
+                  value={newTaskForm.status}
+                  onChange={(e) => setNewTaskForm({ ...newTaskForm, status: e.target.value as any })}
+                  className="w-full px-3 py-1.5 rounded bg-slate-900 border border-slate-700 text-white"
+                >
+                  <option value="TODO">TO DO</option>
+                  <option value="BACKLOG">BACKLOG</option>
+                  <option value="IN_PROGRESS">IN PROGRESS</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 border-t border-slate-800 pt-3">
+              <button
+                type="button"
+                onClick={() => setCreateTaskModalOpen(false)}
+                className="px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateTask}
+                className="px-4 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold"
+              >
+                Create Task
+              </button>
+            </div>
           </div>
         </div>
       )}

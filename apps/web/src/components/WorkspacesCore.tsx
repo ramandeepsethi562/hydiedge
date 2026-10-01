@@ -19,7 +19,7 @@ import {
 } from "@/lib/moduleRegistry";
 
 import { RightDrawerContext } from "./GlobalShell";
-import TimeChampSuite from "./TimeChampSuite";
+import HydiEdgeCoreSuite from "./HydiEdgeCoreSuite";
 import HydiEdgeFieldSuite from "./HydiEdgeFieldSuite";
 import HydiEdgeTelephonySuite from "./HydiEdgeTelephonySuite";
 
@@ -240,7 +240,7 @@ export function DashboardsWorkspace({
 }: SharedWorkspaceProps) {
 
   const [dashView, setDashView] = useState<
-    "DASH-001" | "DASH-002" | "DASH-003" | "DB-001" | "REP-001" | "TIMECHAMP-SHOWCASE" | "HYDIEDGE-WORKFORCE-SUITE" | "HYDIEDGE-FIELD-SUITE" | "HYDIEDGE-TELEPHONY-SUITE" | "ORG-PROFILE" | "ORG-HIERARCHY"
+    "DASH-001" | "DASH-002" | "DASH-003" | "DB-001" | "REP-001" | "HYDIEDGE-WORKFORCE-SUITE" | "HYDIEDGE-WORKFORCE-SUITE" | "HYDIEDGE-FIELD-SUITE" | "HYDIEDGE-TELEPHONY-SUITE" | "ORG-PROFILE" | "ORG-HIERARCHY"
   >("DASH-001");
 
   const [tcBrochureSubTab, setTcBrochureSubTab] = useState<
@@ -895,7 +895,7 @@ export function DashboardsWorkspace({
 
             { id: "REP-001", label: "REP-001 BI & Capacity" },
 
-            { id: "TIMECHAMP-SHOWCASE", label: "★ HydiEdge Workforce Suite (Time & Attendance)" },
+            { id: "HYDIEDGE-WORKFORCE-SUITE", label: "★ HydiEdge Workforce Suite (Time & Attendance)" },
             { id: "HYDIEDGE-FIELD-SUITE", label: "★ HydiEdge Field Staff & GPS Tracking" },
             { id: "HYDIEDGE-TELEPHONY-SUITE", label: "★ HydiEdge Mobile Telephony & Calls" },
             { id: "ORG-PROFILE", label: "★ Module 01: Organization Profile (Panel 1)" },
@@ -913,7 +913,7 @@ export function DashboardsWorkspace({
 
                 setDashView(tab.id as typeof dashView);
 
-                if (tab.id !== "TIMECHAMP-SHOWCASE") setActiveScreenId(tab.id);
+                if (tab.id !== "HYDIEDGE-WORKFORCE-SUITE") setActiveScreenId(tab.id);
 
               }}
 
@@ -1001,10 +1001,10 @@ export function DashboardsWorkspace({
 
       {/* TIME CHAMP BROCHURE PARITY SHOWCASE (PAGES 1 - 10) */}
 
-      {dashView === "TIMECHAMP-SHOWCASE" && (
+      {dashView === "HYDIEDGE-WORKFORCE-SUITE" && (
 
         <div className="space-y-6">
-          <TimeChampSuite />
+          <HydiEdgeCoreSuite />
 
           <div className="hydi-card p-5 border-emerald-500/40 bg-gradient-to-br from-slate-950 via-[#0b172a] to-slate-950 space-y-5">
 
@@ -8144,7 +8144,7 @@ export function TimeAttendanceShrinkageWorkspace({
 }: SharedWorkspaceProps) {
 
   // Interactive BPO Shrinkage Calculator State (ATT-010)
-  const [showTimeChampSuite, setShowTimeChampSuite] = useState(true);
+  const [showHydiEdgeCoreSuite, setShowHydiEdgeCoreSuite] = useState(true);
 
   const [scheduledHours, setScheduledHours] = useState(4000);
 
@@ -8711,9 +8711,9 @@ export function TimeAttendanceShrinkageWorkspace({
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={() => setShowTimeChampSuite(!showTimeChampSuite)}
+            onClick={() => setShowHydiEdgeCoreSuite(!showHydiEdgeCoreSuite)}
             className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition ${
-              showTimeChampSuite
+              showHydiEdgeCoreSuite
                 ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 ring-2 ring-emerald-400"
                 : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30"
             }`}
@@ -8736,8 +8736,8 @@ export function TimeAttendanceShrinkageWorkspace({
         </div>
       </div>
 
-      {showTimeChampSuite && (
-        <TimeChampSuite />
+      {showHydiEdgeCoreSuite && (
+        <HydiEdgeCoreSuite />
       )}
 
 
@@ -13877,9 +13877,9 @@ export function ProductivityAndLicensesWorkspace({
         <div className="flex flex-wrap gap-1.5">
           <button
             type="button"
-            onClick={() => setActivitySubTab("TIMECHAMP_SUITE" as any)}
+            onClick={() => setActivitySubTab("HYDIEDGE_CORE_SUITE" as any)}
             className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition ${
-              (activitySubTab as string) === "TIMECHAMP_SUITE"
+              (activitySubTab as string) === "HYDIEDGE_CORE_SUITE"
                 ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 ring-2 ring-emerald-400"
                 : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30"
             }`}
@@ -14049,8 +14049,8 @@ export function ProductivityAndLicensesWorkspace({
 
 
 
-      {(activitySubTab as string) === "TIMECHAMP_SUITE" && (
-        <TimeChampSuite />
+      {(activitySubTab as string) === "HYDIEDGE_CORE_SUITE" && (
+        <HydiEdgeCoreSuite />
       )}
 
       {/* =====================================================================
