@@ -19,6 +19,7 @@ import {
 } from "@/lib/moduleRegistry";
 
 import { RightDrawerContext } from "./GlobalShell";
+import TimeChampSuite from "./TimeChampSuite";
 
 import {
 
@@ -1002,7 +1003,10 @@ export function DashboardsWorkspace({
 
       {dashView === "TIMECHAMP-SHOWCASE" && (
 
-        <div className="hydi-card p-5 border-emerald-500/40 bg-gradient-to-br from-slate-950 via-[#0b172a] to-slate-950 space-y-5">
+        <div className="space-y-6">
+          <TimeChampSuite />
+
+          <div className="hydi-card p-5 border-emerald-500/40 bg-gradient-to-br from-slate-950 via-[#0b172a] to-slate-950 space-y-5">
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
 
@@ -1863,6 +1867,7 @@ export function DashboardsWorkspace({
           )}
 
         </div>
+      </div>
 
       )}
 
@@ -8131,6 +8136,7 @@ export function TimeAttendanceShrinkageWorkspace({
 }: SharedWorkspaceProps) {
 
   // Interactive BPO Shrinkage Calculator State (ATT-010)
+  const [showTimeChampSuite, setShowTimeChampSuite] = useState(true);
 
   const [scheduledHours, setScheduledHours] = useState(4000);
 
@@ -8694,35 +8700,37 @@ export function TimeAttendanceShrinkageWorkspace({
 
         </div>
 
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowTimeChampSuite(!showTimeChampSuite)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition ${
+              showTimeChampSuite
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 ring-2 ring-emerald-400"
+                : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30"
+            }`}
+          >
+            ★ TimeChamp Suite (25-Min Demo)
+          </button>
 
           {["TIME-001", "TIME-007", "TIME-008", "SHIFT-001", "ATT-001", "ATT-006", "ATT-010"].map((s) => (
-
             <button
-
               key={s}
-
               type="button"
-
               onClick={() => setActiveScreenId(s)}
-
               className={`px-3 py-1.5 rounded-lg text-xs font-mono ${
-
                 activeScreenId === s ? "bg-blue-600 text-white" : "bg-slate-900 text-slate-400 border border-slate-800"
-
               }`}
-
             >
-
               {s}
-
             </button>
-
           ))}
-
         </div>
-
       </div>
+
+      {showTimeChampSuite && (
+        <TimeChampSuite />
+      )}
 
 
 
@@ -13859,6 +13867,17 @@ export function ProductivityAndLicensesWorkspace({
         {/* 4 Core Module 08 Panels + Advanced Rules */}
 
         <div className="flex flex-wrap gap-1.5">
+          <button
+            type="button"
+            onClick={() => setActivitySubTab("TIMECHAMP_SUITE" as any)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition ${
+              (activitySubTab as string) === "TIMECHAMP_SUITE"
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 ring-2 ring-emerald-400"
+                : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30"
+            }`}
+          >
+            ★ TimeChamp Suite (25-Min Demo)
+          </button>
 
           <button
 
@@ -14021,6 +14040,10 @@ export function ProductivityAndLicensesWorkspace({
       )}
 
 
+
+      {(activitySubTab as string) === "TIMECHAMP_SUITE" && (
+        <TimeChampSuite />
+      )}
 
       {/* =====================================================================
 
