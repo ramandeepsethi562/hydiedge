@@ -1,7 +1,7 @@
 // ============================================================================
 // @hydiems/api — Payroll Management, Custom Formula Engine, Salary Structures,
 // Inline Payslip Adjustments, Bank Payout File Generator & Offboarding Clearance
-// Parity with Jesto Payroll & Field Customer Directory
+// Full HydiEdge Enterprise Payroll Suite & Field Customer Directory
 // ============================================================================
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "HydiEms v2.5 Enterprise — Unified Workforce Intelligence, Time, DLP & Operations Platform",
+  title: "HydiEdge Enterprise — Unified Workforce Intelligence, Payroll, Time, DLP & Operations Platform",
   description:
-    "Production-grade 33-Module + 45-Extension Enterprise Workforce Analytics, WebRTC Live Monitoring, 8-State Time Tracking, BPO Shrinkage, 11-Layer DLP, Agile Project/Task Management, and HydiAI Platform.",
+    "Production-grade 33-Module + 45-Extension Enterprise Workforce Intelligence, WebRTC Live Monitoring, Precision Payroll Studio, Field Workforce Tracking, 8-State Time Tracking, BPO Shrinkage, 11-Layer DLP, Agile Project/Task Management, and HydiAI Platform.",
 };
 
 export default function RootLayout({

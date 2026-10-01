@@ -344,7 +344,7 @@ export default function HydiEdgePayrollStudio() {
             Component Formula Engine, Pay Run Wizard & Multi-Dept Exit Clearance
           </h1>
           <p className="text-xs text-slate-400 max-w-2xl mt-0.5">
-            Full parity with Jesto Payroll: custom earning/deduction formulas, inline payslip adjustments without batch reruns, 1-click bank payout file generator, and department sign-off clearance.
+            Full HydiEdge enterprise payroll: custom earning/deduction formulas, inline payslip adjustments without batch reruns, 1-click bank payout file generator, and department sign-off clearance.
           </p>
         </div>
 
@@ -491,7 +491,7 @@ export default function HydiEdgePayrollStudio() {
                   Click &ldquo;Adjust Slip&rdquo; to modify Loss of Pay (LOP), add one-time bonuses, gratuity, or withhold salary without rerunning the entire batch.
                 </p>
               </div>
-              <div className="text-xs font-mono text-cyan-400">Jesto Parity: Zero Batch Rerun Requirement</div>
+              <div className="text-xs font-mono text-cyan-400">HydiEdge Precision: Zero Batch Rerun Requirement</div>
             </div>
 
             <div className="overflow-x-auto">
