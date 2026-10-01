@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import GlobalShell, { RightDrawerContext, UserSession } from "@/components/GlobalShell";
 import ModuleWorkspaces from "@/components/ModuleWorkspaces";
+import HydiEdgePublicWebsite from "@/components/HydiEdgePublicWebsite";
 import {
   INITIAL_EMPLOYEES,
   EmployeeRecord,
@@ -29,6 +30,7 @@ import {
   LogOut,
   Users,
   Video,
+  Globe,
 } from "lucide-react";
 
 interface LiveServerEmployee {
@@ -112,6 +114,7 @@ export default function HydiEmsEnterprisePage() {
   const [loginPassword, setLoginPassword] = useState<string>("");
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginLoading, setLoginLoading] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<"WEBSITE" | "LOGIN" | "WORKSPACE">("WEBSITE");
 
   // Shell State
   const [activeRole, setActiveRole] = useState<SystemRole>("ORG_ADMIN");
@@ -138,6 +141,7 @@ export default function HydiEmsEnterprisePage() {
         if (parsed && parsed.email && parsed.role) {
           setCurrentUser(parsed);
           setActiveRole(parsed.role);
+          setViewMode("WORKSPACE");
           if (parsed.role === "EMPLOYEE") {
             setActiveCategory("DASHBOARDS");
             setActiveScreenId("DASH-003");
@@ -247,6 +251,7 @@ export default function HydiEmsEnterprisePage() {
       localStorage.setItem("hydiedge_session", JSON.stringify(sessionData));
       setCurrentUser(sessionData);
       setActiveRole(sessionData.role);
+      setViewMode("WORKSPACE");
 
       if (sessionData.role === "EMPLOYEE") {
         setActiveCategory("DASHBOARDS");
@@ -265,6 +270,7 @@ export default function HydiEmsEnterprisePage() {
   const handleLogout = () => {
     localStorage.removeItem("hydiedge_session");
     setCurrentUser(null);
+    setViewMode("WEBSITE");
   };
 
   // Prevent flicker during initial auth check
@@ -279,19 +285,35 @@ export default function HydiEmsEnterprisePage() {
     );
   }
 
+  // If viewMode is WEBSITE, display the modern HydiEdge Public Marketing Website & Pricing Calculator
+  if (viewMode === "WEBSITE") {
+    return (
+      <HydiEdgePublicWebsite
+        onEnterApp={() => setViewMode(currentUser ? "WORKSPACE" : "LOGIN")}
+      />
+    );
+  }
+
   // If unauthenticated, display the Secure Enterprise Login Gate
   if (!currentUser) {
+
     return (
       <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col justify-between p-4 sm:p-8">
         {/* Top Header */}
         <div className="max-w-6xl w-full mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setViewMode("WEBSITE")}
+              className="text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 transition cursor-pointer"
+            >
+              ← Back to Website & Pricing
+            </button>
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/25 text-lg">
               H
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-lg tracking-tight text-white">HydiEms Enterprise</span>
+                <span className="font-bold text-lg tracking-tight text-white">HydiEdge Enterprise</span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30">
                   v2.5.0 Production
                 </span>
@@ -478,6 +500,14 @@ export default function HydiEmsEnterprisePage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setViewMode("WEBSITE")}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-900/60 hover:bg-indigo-800 text-indigo-200 text-xs font-semibold border border-indigo-700/60 shadow-sm transition"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              Website & Pricing
+            </button>
             {activeRole !== "EMPLOYEE" && (
               <button
                 type="button"

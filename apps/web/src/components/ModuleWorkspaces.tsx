@@ -19,6 +19,7 @@ import {
   LiveMonitorMediaWorkspace,
 } from "./WorkspacesCore";
 import HydiEdgePayrollStudio from "./HydiEdgePayrollStudio";
+import HydiEdgeLicensingStudio from "./HydiEdgeLicensingStudio";
 import {
   FolderKanban,
   CheckSquare,
@@ -2523,7 +2524,7 @@ export function OpsAiAdminWorkspace({
           </h1>
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {["AI-008", "COM-003", "FIELD-003", "MDM-001", "DEPLOY-001", "INT-001", "SA-5", "SA-6", "SUPER-002"].map(
+          {["AI-008", "COM-003", "FIELD-003", "MDM-001", "DEPLOY-001", "INT-001", "SA-5", "SA-6", "SUPER-002", "SUPER-003"].map(
             (s) => (
               <button
                 key={s}
@@ -2718,6 +2719,11 @@ export function OpsAiAdminWorkspace({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* SUPER-003 Enterprise Seat Licensing & HWID Anti-Piracy Studio */}
+      <div className="pt-2">
+        <HydiEdgeLicensingStudio />
       </div>
 
       {/* Complete 45 Enterprise Extensions Verification Matrix (MISSING-01..MISSING-45) */}
