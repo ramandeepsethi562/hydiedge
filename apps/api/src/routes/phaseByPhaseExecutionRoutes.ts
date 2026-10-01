@@ -237,7 +237,7 @@ export async function registerPhaseByPhaseExecutionRoutes(
           coreModulesCount: ALL_MODULES.length,
           enterpriseExtensionsCount: 45,
           totalScreensImplemented: 422,
-          timeChampParityPct: 100,
+          hydiEdgeParityPct: 100,
         },
       },
       {

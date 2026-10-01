@@ -873,7 +873,7 @@ export function DashboardsWorkspace({
 
           <p className="text-xs text-slate-400">
 
-            Real-Time ClickHouse OLAP Aggregations • 8 KPI Cards • 7 Interactive Telemetry Charts • Custom Widget Builder • Time Champ Parity
+            Real-Time ClickHouse OLAP Aggregations • 8 KPI Cards • 7 Interactive Telemetry Charts • Custom Widget Builder • HydiEdge Enterprise Parity
 
           </p>
 
@@ -999,7 +999,7 @@ export function DashboardsWorkspace({
 
 
 
-      {/* TIME CHAMP BROCHURE PARITY SHOWCASE (PAGES 1 - 10) */}
+      {/* HYDIEDGE ENTERPRISE WORKFORCE SUITE SHOWCASE */}
 
       {dashView === "HYDIEDGE-WORKFORCE-SUITE" && (
 
@@ -1016,13 +1016,13 @@ export function DashboardsWorkspace({
 
                 <span className="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold text-xs">
 
-                  TIME CHAMP OFFICIAL BROCHURE PARITY
+                  HYDIEDGE OFFICIAL ENTERPRISE WORKFORCE PARITY
 
                 </span>
 
                 <span className="text-xs text-slate-400 font-mono">
 
-                  Full 1:1 Implementation of Time Champ Pages 1–10
+                  Full 1:1 Implementation of HydiEdge Intelligence Suite
 
                 </span>
 
@@ -1858,7 +1858,7 @@ export function DashboardsWorkspace({
 
               <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800 text-xs text-slate-400 font-mono">
 
-                Time Champ assists in providing precise timesheets that are subject to an approval procedure. Additionally, it aids in billing clients, paying consultants according to projects.
+                HydiEdge assists in providing precise timesheets that are subject to an approval procedure. Additionally, it aids in billing clients, paying consultants according to projects.
 
               </div>
 
